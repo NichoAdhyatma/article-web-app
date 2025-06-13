@@ -6,6 +6,18 @@ import Typography from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useMediaQuery } from "react-responsive";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { LogOut } from "lucide-react";
+import AlertDialogWrapper from "./alert-dialog-wrapper";
+import { useState } from "react";
 
 interface NavbarProfileProps {
   responsive?: boolean;
@@ -39,6 +51,8 @@ const NavbarProfile = ({ responsive, className }: NavbarProfileProps) => {
       : "border-none"
     : "border-b-[1px] border-slate-200";
 
+  const [open, setOpen] = useState(false);
+
   return (
     <Box
       direction={"row"}
@@ -53,21 +67,48 @@ const NavbarProfile = ({ responsive, className }: NavbarProfileProps) => {
     >
       <Image src={imagePath} width={134} height={24} alt="app-logo-white" />
 
-      <Box direction={"row"} className="gap-[6px]" fullWidth={false}>
-        <Avatar className="justify-center items-center">
-          <AvatarFallback className="text-blue-900 bg-blue-200 font-medium text-base">
-            J
-          </AvatarFallback>
-        </Avatar>
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <Box direction={"row"} className="gap-[6px]" fullWidth={false}>
+            <Avatar className="justify-center items-center">
+              <AvatarFallback className="text-blue-900 bg-blue-200 font-medium text-base">
+                J
+              </AvatarFallback>
+            </Avatar>
 
-        <Typography
-          size={"textBase"}
-          weight={"medium"}
-          className={cn("underline hidden sm:block", textProfileColor)}
-        >
-          James Dean
-        </Typography>
-      </Box>
+            <Typography
+              size={"textBase"}
+              weight={"medium"}
+              className={cn("underline hidden sm:block", textProfileColor)}
+            >
+              James Dean
+            </Typography>
+          </Box>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-[224px] mr-10" align="start">
+          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setOpen(true)}
+            >
+              <LogOut fontWeight={500} />
+              <Typography size={"textSm"} weight={"medium"}>
+                Log out
+              </Typography>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialogWrapper
+        open={open}
+        onOpenChange={setOpen}
+        title="Logout"
+        description="Are you sure want to logout?"
+        actionText="Logout"
+      />
     </Box>
   );
 };
