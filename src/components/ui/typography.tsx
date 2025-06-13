@@ -12,7 +12,7 @@ const typographyVariants = cva("", {
       textMd: "text-[16px] leading-[24px] tracking-[0]",
       textSm: "text-sm",
       textBase: "text-base",
-      textXs: "text-[12px] leading-[18px] tracking-[0]",
+      textXs: "text-xs",
       textXl: "text-xl",
       text5xl: "text-5xl",
       text2xl: "text-2xl",
