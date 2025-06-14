@@ -12,9 +12,13 @@ interface ReusableSelectProps {
   options: { label: string; value: string }[];
   placeholder?: string;
   value?: string;
-  onChange?: (value: string) => void;
+  onChange?: (value?: string) => void;
   className?: string;
+  withClearOption?: boolean;
+  clearLabel?: string;
 }
+
+const CLEAR_VALUE = "-";
 
 export default function SelectBuilder({
   options,
@@ -22,15 +26,29 @@ export default function SelectBuilder({
   value,
   onChange,
   className,
+  withClearOption = true,
+  clearLabel = "All",
 }: ReusableSelectProps) {
+  const finalOptions = withClearOption
+    ? [{ label: clearLabel, value: CLEAR_VALUE }, ...options]
+    : options;
+
+  const handleValueChange = (selectedValue: string) => {
+    if (selectedValue === CLEAR_VALUE) {
+      onChange?.(undefined);
+    } else {
+      onChange?.(selectedValue);
+    }
+  };
+
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select value={value ?? CLEAR_VALUE} onValueChange={handleValueChange}>
       <SelectTrigger className={className ?? "w-fit"}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
 
       <SelectContent>
-        {options.map((option) => (
+        {finalOptions.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>

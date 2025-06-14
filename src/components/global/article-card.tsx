@@ -6,18 +6,28 @@ import Typography from "../ui/typography";
 import { Badge } from "../ui/badge";
 import { ResponsiveImage } from "./responsive-image";
 import { useRouter } from "next/navigation";
+import { Article } from "@/lib/types/article";
+import { cleanStringFromHTML } from "@/lib/format/string-format";
 
-const ArticleCard = () => {
+interface ArticleCardProps {
+  article: Article;
+}
+
+const ArticleCard = ({ article }: ArticleCardProps) => {
   const router = useRouter();
 
   const handleNavigateToDetail = () => {
-    router.push("/article/1");
+    router.push(`/article/${article.id}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <Box className="gap-4 sm:max-w-[387px]" onClick={handleNavigateToDetail}>
+    <Box
+      className="gap-4 sm:max-w-[387px] h-[456px]"
+      onClick={handleNavigateToDetail}
+    >
       <ResponsiveImage
-        src="https://placehold.co/387x240"
+        src={article.imageUrl || "https://placehold.co/387x240"}
         alt="placeholder-img"
         aspectRatio="387/240"
         objectFit="cover"
@@ -25,27 +35,25 @@ const ArticleCard = () => {
         unoptimized
       />
 
-      <Box className="gap-2" align={"start"}>
+      <Box className="gap-2 min-h-[200px]" align={"start"} justify={"start"}>
         <Typography size={"textSm"} className="text-slate-600">
-          {dateFormat.MMMMdyyyy(new Date())}
+          {dateFormat.MMMMdyyyy(article.updatedAt ?? "")}
         </Typography>
 
         <Typography
           size={"textLg"}
           weight={"semibold"}
-          className="text-slate-900"
+          className="text-slate-900 line-clamp-2"
         >
-          Cybersecurity Essentials Every Developer Should Know
+          {article.title || "-"}
         </Typography>
 
-        <Typography size={"textBase"} className="text-slate-600 line-clamp-2">
-          Protect your apps and users with these fundamental cybersecurity
-          practices for developers.
+        <Typography size={"textBase"} className="text-slate-600 line-clamp-3">
+          {cleanStringFromHTML(article.content ?? "-")}
         </Typography>
 
         <Box justify={"start"} direction={"row"} className="gap-2">
-          <Badge>Technology</Badge>
-          <Badge>Design</Badge>
+          <Badge> {article.category?.name}</Badge>
         </Box>
       </Box>
     </Box>
