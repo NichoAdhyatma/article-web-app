@@ -6,20 +6,19 @@ import { getCategories } from "@/data/category";
 import { ArticleQueryParams } from "@/lib/types/article";
 
 interface PageProps {
-  searchParams: ArticleQueryParams;
+  searchParams: Promise<ArticleQueryParams>;
 }
 
 const HomePage = async ({ searchParams }: PageProps) => {
-  const title =
-    typeof searchParams.title === "string" ? searchParams.title : "";
-  const page = Number(
-    typeof searchParams.page === "string" ? searchParams.page : "1"
-  );
-  const limit = Number(
-    typeof searchParams.limit === "string" ? searchParams.limit : "9"
-  );
-  const category =
-    typeof searchParams.category === "string" ? searchParams.category : "";
+  const searchParamsObj = await searchParams;
+
+  const title = searchParamsObj.title || "";
+
+  const page = Number(searchParamsObj.page || "1");
+
+  const limit = Number(searchParamsObj.limit || "9");
+
+  const category = searchParamsObj.category || "";
 
   const articleResponse = await getArticles({
     title,
