@@ -5,17 +5,9 @@ import React, { useEffect, useRef, useState } from "react";
 import HeaderContent from "./header-content";
 import NavbarProfile from "../../global/navbar-profile";
 import Typography from "@/components/ui/typography";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import Footer from "@/components/global/footer";
 import ListArticleCard from "@/components/global/list-article-card";
+import PaginationBuilder from "@/components/global/builder/pagination-builder";
 
 const HomeTemplate = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -28,7 +20,7 @@ const HomeTemplate = () => {
       },
       {
         root: null,
-        threshold: 0.2
+        threshold: 0.2,
       }
     );
 
@@ -73,27 +65,13 @@ const HomeTemplate = () => {
           <ListArticleCard length={9} />
         </Box>
 
-        <Pagination className="w-full">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" />
-            </PaginationItem>
-
-            <PaginationItem>
-              <PaginationLink href="#" isActive>
-                1
-              </PaginationLink>
-            </PaginationItem>
-
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-
-            <PaginationItem>
-              <PaginationNext href="#" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        <PaginationBuilder
+          totalPages={5}
+          currentPage={1}
+          onPageChange={(page) => {
+            console.log("Current Page:", page);
+          }}
+        />
       </Box>
 
       {/* Footer */}
