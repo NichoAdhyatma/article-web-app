@@ -54,12 +54,13 @@ export function FormSelectField<T extends FieldValues>({
       }) => (
         <FormItem className="w-full gap-[6px]">
           {label && <FormLabel>{label}</FormLabel>}
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <Select onValueChange={field.onChange} value={field.value} disabled={field.disabled}>
             <FormControl>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
             </FormControl>
+
             <SelectContent>
               {options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>

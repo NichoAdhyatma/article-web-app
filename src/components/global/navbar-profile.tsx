@@ -1,11 +1,10 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Box } from "@/components/ui/box";
-import Typography from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useMediaQuery } from "react-responsive";
+import AvatarProfile from "./avatar-profile";
 
 interface NavbarProfileProps {
   responsive?: boolean;
@@ -53,21 +52,7 @@ const NavbarProfile = ({ responsive, className }: NavbarProfileProps) => {
     >
       <Image src={imagePath} width={134} height={24} alt="app-logo-white" />
 
-      <Box direction={"row"} className="gap-[6px]" fullWidth={false}>
-        <Avatar className="justify-center items-center">
-          <AvatarFallback className="text-blue-900 bg-blue-200 font-medium text-base">
-            J
-          </AvatarFallback>
-        </Avatar>
-
-        <Typography
-          size={"textBase"}
-          weight={"medium"}
-          className={cn("underline hidden sm:block", textProfileColor)}
-        >
-          James Dean
-        </Typography>
-      </Box>
+      <AvatarProfile textProfileColor={textProfileColor} />
     </Box>
   );
 };

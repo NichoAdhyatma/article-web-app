@@ -1,7 +1,7 @@
 "use client";
 
-import { FormInputField } from "@/components/form/form-input-field";
-import { FormSelectField } from "@/components/form/form-select-field";
+import { FormInputField } from "@/components/global/form/form-input-field";
+import { FormSelectField } from "@/components/global/form/form-select-field";
 import { Box } from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";

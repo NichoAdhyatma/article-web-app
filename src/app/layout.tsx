@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
 import "./globals.css";
+import { AlertDialogProvider } from "@/context/alert-dialog-context";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -19,7 +20,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${archivo.className} antialiased min-h-screen`}>{children}</body>
+      <body className={`${archivo.className} antialiased min-h-screen`}>
+        <AlertDialogProvider>{children}</AlertDialogProvider>
+      </body>
     </html>
   );
 }

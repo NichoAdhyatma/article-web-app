@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { FormInputField } from "@/components/form/form-input-field";
+import { FormInputField } from "@/components/global/form/form-input-field";
 import { Box } from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -22,7 +22,7 @@ const LoginTemplate = () => {
 
   const { control } = form;
 
-  const router = useRouter()
+  const router = useRouter();
 
   const onSubmit = (data: LoginForm) => {
     console.log("Form submitted with data:", data);
@@ -72,7 +72,11 @@ const LoginTemplate = () => {
 
       <Typography size={"textSm"} weight={"medium"}>
         Don’t have an account?{" "}
-        <Typography onClick={handleNavigateToRegister} as="span" className="underline text-primary hover:cursor-pointer">
+        <Typography
+          onClick={handleNavigateToRegister}
+          as="span"
+          className="underline text-primary hover:cursor-pointer"
+        >
           Register
         </Typography>
       </Typography>
