@@ -1,16 +1,27 @@
 "use client";
 
 import { Box } from "@/components/ui/box";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import HeaderContent from "./header-content";
 import NavbarProfile from "../../global/navbar-profile";
 import Typography from "@/components/ui/typography";
 import Footer from "@/components/global/footer";
 import ListArticleCard from "@/components/global/list-article-card";
 import PaginationBuilder from "@/components/global/builder/pagination-builder";
+import { ArticleResponse } from "@/lib/types/article";
+import { useFilterContext } from "@/context/filter-context";
+import { CategoryResponse } from "@/lib/types/category";
 
-const HomeTemplate = () => {
+interface HomeTemplateProps {
+  articleResponse?: ArticleResponse;
+  categoryResponse?: CategoryResponse; 
+}
+
+const HomeTemplate = ({ articleResponse }: HomeTemplateProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const { handlePageChange } = useFilterContext();
+
   const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,7 +31,7 @@ const HomeTemplate = () => {
       },
       {
         root: null,
-        threshold: 0.2,
+        threshold: 0,
       }
     );
 
@@ -37,8 +48,20 @@ const HomeTemplate = () => {
     };
   }, []);
 
+  const getTotalPages = useMemo(() => {
+    if (!articleResponse || !articleResponse.total || !articleResponse.limit) {
+      return 0;
+    }
+
+    return Math.ceil(articleResponse?.total / articleResponse?.limit);
+  }, [articleResponse]);
+
+  const getTotalArticles = () => {
+    return articleResponse?.total || 0;
+  };
+
   return (
-    <>
+    <div className="flex flex-col min-h-screen bg-white">
       {/* Header */}
       <Box ref={headerRef} className="bg-img-header">
         <Box className="bg-[#2563EB]/[0.86]">
@@ -52,31 +75,32 @@ const HomeTemplate = () => {
       </Box>
 
       {/* Main Content */}
-      <Box className="flex-1 py-10 px-5 gap-10">
+      <Box justify={"start"} className="flex-1 py-10 px-5 gap-10">
         <Box
           align={"start"}
           justify={"start"}
-          className="max-w-[1240px] mx-auto gap-6"
+          className="max-w-[1240px] mx-auto gap-6 pt-10 sm:pt-0"
         >
-          <Typography className="text-slate-600" align={"left"}>
-            Showing : 20 of 240 articles
+          <Typography className="text-slate-600 hidden sm:block" align={"left"}>
+            Showing : {articleResponse?.data?.length} of {getTotalArticles()}{" "}
+            articles
           </Typography>
 
-          <ListArticleCard length={9} />
+          <ListArticleCard length={9} articles={articleResponse?.data} />
         </Box>
 
-        <PaginationBuilder
-          totalPages={5}
-          currentPage={1}
-          onPageChange={(page) => {
-            console.log("Current Page:", page);
-          }}
-        />
+        {getTotalArticles() > 9 && (
+          <PaginationBuilder
+            totalPages={getTotalPages}
+            currentPage={articleResponse?.page || 1}
+            onPageChange={handlePageChange}
+          />
+        )}
       </Box>
 
       {/* Footer */}
       <Footer />
-    </>
+    </div>
   );
 };
 
