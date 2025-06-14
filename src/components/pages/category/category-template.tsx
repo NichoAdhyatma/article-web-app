@@ -20,7 +20,7 @@ import Typography from "@/components/ui/typography";
 import { useAlertDialog } from "@/context/alert-dialog-context";
 import { Search, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 const dummyData = [
   {
@@ -145,28 +145,32 @@ const CategoryTemplate = () => {
                 </TableCell>
                 <TableCell>
                   <Box direction={"row"} className="gap-3">
-                    <EditCategoryDialog
-                      trigger={
-                        <Typography
-                          size={"textSm"}
-                          weight={"regular"}
-                          onClick={() =>
-                            handleEditCategoryId({
-                              categoryId: category.id,
-                              categoryName: category.category,
-                            })
-                          }
-                          className="text-blue-600 underline hover:cursor-pointer"
-                        >
-                          Edit
-                        </Typography>
-                      }
-                      onOpenChange={(open) => {
-                        if (!open) {
-                          router.replace("/admin/category", { scroll: false });
+                    <Suspense fallback={null}>
+                      <EditCategoryDialog
+                        trigger={
+                          <Typography
+                            size={"textSm"}
+                            weight={"regular"}
+                            onClick={() =>
+                              handleEditCategoryId({
+                                categoryId: category.id,
+                                categoryName: category.category,
+                              })
+                            }
+                            className="text-blue-600 underline hover:cursor-pointer"
+                          >
+                            Edit
+                          </Typography>
                         }
-                      }}
-                    />
+                        onOpenChange={(open) => {
+                          if (!open) {
+                            router.replace("/admin/category", {
+                              scroll: false,
+                            });
+                          }
+                        }}
+                      />
+                    </Suspense>
 
                     <Typography
                       size={"textSm"}
