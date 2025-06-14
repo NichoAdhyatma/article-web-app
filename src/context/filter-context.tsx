@@ -7,7 +7,7 @@ type FilterContextType = {
   title: string;
   page: number;
   limit: number;
-  category: string; // Assuming you want to add category later
+  category: string; 
   handleSearch: (title: string) => void;
   handlePageChange: (page: number) => void;
   handleCategoryChange: (category: string) => void;

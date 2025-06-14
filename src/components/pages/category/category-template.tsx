@@ -18,26 +18,18 @@ import {
 } from "@/components/ui/table";
 import Typography from "@/components/ui/typography";
 import { useAlertDialog } from "@/context/alert-dialog-context";
+import { useFilterContext } from "@/context/filter-context";
+import useDebounce from "@/hooks/use-debounce";
+import { CategoryResponse } from "@/lib/types/category";
 import { Search, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-const dummyData = [
-  {
-    id: 1,
-    title: "Web Development Basics",
-    category: "Frontend",
-    createdAt: "April 13, 2025 10:55:12",
-  },
-  {
-    id: 2,
-    title: "Understanding Backend Technologies",
-    category: "Backend",
-    createdAt: "April 14, 2025 11:00:00",
-  },
-];
+interface CategoryTemplateProps {
+  categories: CategoryResponse;
+}
 
-const CategoryTemplate = () => {
+const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
   const { showDialog } = useAlertDialog();
 
   const router = useRouter();
@@ -45,16 +37,36 @@ const CategoryTemplate = () => {
   const [openCreateCategoryDialog, setOpenCreateCategoryDialog] =
     useState(false);
 
+  const { handleSearch } = useFilterContext();
+
+  const [search, setSearch] = useState("");
+
+  const debuncedSearch = useDebounce(search, 500);
+
+  useEffect(
+    () => {
+      handleSearch(debuncedSearch);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [debuncedSearch]
+  );
+
   const handleNavigateAddCategory = () => {
     setOpenCreateCategoryDialog(true);
   };
 
-  const handleDeleteCategory = (articleId: number) => {
+  const handleDeleteCategory = (articleId?: string) => {
     // Logic to delete the article
     console.log(`Deleting category with ID: ${articleId}`);
   };
 
-  const handleShowAlertDeleteDialog = (articleId: number, name: string) => {
+  const handleShowAlertDeleteDialog = ({
+    articleId,
+    name,
+  }: {
+    articleId?: string;
+    name: string;
+  }) => {
     showDialog({
       title: "Delete Article",
       description: `Delete category "${name}"? This will remove it from master data permanently.`,
@@ -68,9 +80,13 @@ const CategoryTemplate = () => {
     categoryId,
     categoryName,
   }: {
-    categoryId: number;
+    categoryId?: string;
     categoryName: string;
   }) => {
+    if (!categoryId) {
+      return;
+    }
+
     router.replace(`?id=${categoryId}&name=${categoryName}`, {
       scroll: false,
     });
@@ -98,6 +114,10 @@ const CategoryTemplate = () => {
             leftIcon={<Search width={20} height={20} />}
             className="bg-transparent flex-1 w-full"
             placeholder="Search by title"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
           />
         </Box>
 
@@ -121,74 +141,75 @@ const CategoryTemplate = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyData.map((category) => (
-              <TableRow key={category.id}>
-                <TableCell>
-                  <Box className="py-3 px-4">
-                    <Typography
-                      align={"center"}
-                      className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
-                    >
-                      {category.category}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="py-3 px-4">
-                    <Typography
-                      align={"center"}
-                      className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
-                    >
-                      {category.createdAt}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box direction={"row"} className="gap-3">
-                    <Suspense fallback={null}>
-                      <EditCategoryDialog
-                        trigger={
-                          <Typography
-                            size={"textSm"}
-                            weight={"regular"}
-                            onClick={() =>
-                              handleEditCategoryId({
-                                categoryId: category.id,
-                                categoryName: category.category,
-                              })
-                            }
-                            className="text-blue-600 underline hover:cursor-pointer"
-                          >
-                            Edit
-                          </Typography>
-                        }
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            router.replace("/admin/category", {
-                              scroll: false,
-                            });
+            {Array.isArray(categories.data) &&
+              categories.data.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell>
+                    <Box className="py-3 px-4">
+                      <Typography
+                        align={"center"}
+                        className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
+                      >
+                        {category.name}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="py-3 px-4">
+                      <Typography
+                        align={"center"}
+                        className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
+                      >
+                        {category.createdAt}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box direction={"row"} className="gap-3">
+                      <Suspense fallback={null}>
+                        <EditCategoryDialog
+                          trigger={
+                            <Typography
+                              size={"textSm"}
+                              weight={"regular"}
+                              onClick={() =>
+                                handleEditCategoryId({
+                                  categoryId: category.id,
+                                  categoryName: category.name ?? "-",
+                                })
+                              }
+                              className="text-blue-600 underline hover:cursor-pointer"
+                            >
+                              Edit
+                            </Typography>
                           }
-                        }}
-                      />
-                    </Suspense>
+                          onOpenChange={(open) => {
+                            if (!open) {
+                              router.replace("/admin/category", {
+                                scroll: false,
+                              });
+                            }
+                          }}
+                        />
+                      </Suspense>
 
-                    <Typography
-                      size={"textSm"}
-                      weight={"regular"}
-                      className="text-red-500 underline hover:cursor-pointer"
-                      onClick={() =>
-                        handleShowAlertDeleteDialog(
-                          category.id,
-                          category.category
-                        )
-                      }
-                    >
-                      Delete
-                    </Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
+                      <Typography
+                        size={"textSm"}
+                        weight={"regular"}
+                        className="text-red-500 underline hover:cursor-pointer"
+                        onClick={() =>
+                          handleShowAlertDeleteDialog({
+                            articleId: category.id,
+                            name: category.name ?? "-",
+                          })
+                        }
+                      >
+                        Delete
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
           <TableFooter>
             <TableRow>
