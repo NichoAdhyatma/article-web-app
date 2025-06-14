@@ -1,5 +1,7 @@
 import CategoryTemplate from "@/components/pages/category/category-template";
 
-export const CategoryPage = () => {
+const CategoryPage = () => {
   return <CategoryTemplate />;
 };
+
+export default CategoryPage;
