@@ -43,6 +43,10 @@ const AvatarProfile = ({ textProfileColor }: AvatarProfileProps) => {
   };
 
   const handleNavigateToProfile = () => {
+    if (user?.role === "Admin") {
+      push("/admin/profile");
+      return;
+    }
     push("/profile");
   };
 

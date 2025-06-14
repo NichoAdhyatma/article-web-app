@@ -22,7 +22,13 @@ import { useRouter } from "next/navigation";
 import { useAlertDialog } from "@/context/alert-dialog-context";
 import { ArticleResponse } from "@/lib/types/article";
 import { CategoryResponse } from "@/lib/types/category";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { dateFormat } from "@/lib/format/date-format";
+import { useDeleteArticle } from "@/lib/api/mutation/article-mutation";
+import toast from "react-hot-toast";
+import { useArticlePreview } from "@/context/article-preview-context";
+import { useFilterContext } from "@/context/filter-context";
+import useDebounce from "@/hooks/use-debounce";
 
 interface ArticlesAdminProps {
   articles: ArticleResponse;
@@ -34,16 +40,63 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
 
   const { showDialog } = useAlertDialog();
 
+  const { mutate } = useDeleteArticle();
+
+  const { clearArticle } = useArticlePreview();
+
   const handleNavigateAddArticle = () => {
     router.push("/admin/article/create");
   };
 
-  const handleDeleteArticle = (articleId?: string) => {
+  const {
+    category,
+    title,
+    handlePageChange,
+    handleCategoryChange,
+    handleSearch,
+  } = useFilterContext();
+
+  const [search, setSearch] = useState(title);
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  const [localCategory, setLocalCategory] = useState(category);
+
+  useEffect(() => {
+    handleSearch(debouncedSearch);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    handleCategoryChange(localCategory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localCategory]);
+
+  const handleDeleteArticle = ({
+    articleId,
+    articleTitle,
+  }: {
+    articleId?: string;
+    articleTitle?: string;
+  }) => {
     if (!articleId) {
       return;
     }
-    // Logic to delete the article
-    console.log(`Deleting article with ID: ${articleId}`);
+    mutate(articleId, {
+      onSuccess: () => {
+        router.refresh();
+        toast.success(
+          `Article with Title ${articleTitle} has been successfully deleted.`
+        );
+      },
+      onError: (error) => {
+        console.error(
+          `Failed to delete article with Title ${articleTitle}:`,
+          error
+        );
+      },
+    });
   };
 
   const handleEditArticle = (articleId?: string) => {
@@ -51,6 +104,8 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
       return;
     }
     // Logic to edit the article
+    clearArticle();
+
     console.log(`Editing article with ID: ${articleId}`);
     router.push(`/admin/article/edit/${articleId}`);
   };
@@ -59,12 +114,17 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
     if (!articleId) {
       return;
     }
-    // Logic to preview the article
-    console.log(`Previewing article with ID: ${articleId}`);
+
     router.push(`/article/${articleId}`);
   };
 
-  const handleShowAlertDeleteDialog = (articleId?: string) => {
+  const handleShowAlertDeleteDialog = ({
+    articleId,
+    articleTitle,
+  }: {
+    articleId?: string;
+    articleTitle?: string;
+  }) => {
     if (!articleId) {
       return;
     }
@@ -76,7 +136,11 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
         "Deleting this article is permanent and cannot be undone. All related content will be removed.",
       actionText: "Delete",
       variant: "destructive",
-      onAction: () => handleDeleteArticle(articleId),
+      onAction: () =>
+        handleDeleteArticle({
+          articleId,
+          articleTitle: articleTitle || "Unknown Article",
+        }),
     });
   };
 
@@ -118,14 +182,26 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
         <Box direction={"row"} className="gap-2 max-w-[357px]">
           <SelectBuilder
             options={categoriesOptions}
+            value={localCategory}
             placeholder="Select Category"
-            value={""}
+            onChange={(value) => {
+              if (!value || value === "") {
+                value = "";
+              }
+
+              setLocalCategory(value);
+            }}
           />
 
           <Input
             leftIcon={<Search width={20} height={20} />}
             className="bg-transparent flex-1 w-full"
             placeholder="Search by title"
+            value={search}
+            onChange={(e) => {
+              console.log("Search input changed:", e.target.value);
+              setSearch(e.target.value);
+            }}
           />
         </Box>
 
@@ -195,7 +271,7 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
                         align={"center"}
                         className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
                       >
-                        {article.createdAt}
+                        {dateFormat.MMMMdyyyyHHmm(article.createdAt ?? "")}
                       </Typography>
                     </Box>
                   </TableCell>
@@ -222,7 +298,12 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
                         size={"textSm"}
                         weight={"regular"}
                         className="text-red-500 underline hover:cursor-pointer"
-                        onClick={() => handleShowAlertDeleteDialog(article.id)}
+                        onClick={() =>
+                          handleShowAlertDeleteDialog({
+                            articleId: article.id,
+                            articleTitle: article.title,
+                          })
+                        }
                       >
                         Delete
                       </Typography>
@@ -237,6 +318,7 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
                 <PaginationBuilder
                   currentPage={articles.page ?? 1}
                   totalPages={getTotalPages}
+                  onPageChange={handlePageChange}
                 />
               </TableCell>
             </TableRow>

@@ -11,6 +11,8 @@ export const dateFormat = {
     formatDate(date, "dd MMM yyyy, HH:mm"),
   yyyyMMdd: (date: Date | string) => formatDate(date, "yyyy-MM-dd"),
   MMMMdyyyy: (date: Date | string) => formatDate(date, "MMMM d, yyyy"),
+  MMMMdyyyyHHmm: (date: Date | string) =>
+    formatDate(date, "MMMM d, yyyy HH:mm"),
 };
 
 export const formatDate = (date: Date | string, dateFormat: string) => {

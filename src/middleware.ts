@@ -10,6 +10,8 @@ const PRIVATE_PATHS = [
   "/admin/profile",
 ];
 
+const isAdminPath = (pathname: string) => pathname.startsWith("/admin");
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const authCookie = request.cookies.get(authTokenName);
@@ -22,10 +24,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
+  if (authCookie && isAdminPath(pathname) && role?.value !== "Admin") {
+    return NextResponse.redirect(new URL("/article", request.url));
+  }
+
   if (authCookie && isPublicPath) {
-    if (role && role.value === "Admin") {
+    if (role?.value === "Admin") {
       return NextResponse.redirect(new URL("/admin/article", request.url));
-    } else if (role && role.value === "User") {
+    } else if (role?.value === "User") {
       return NextResponse.redirect(new URL("/article", request.url));
     }
   }
@@ -34,5 +40,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api|_next/|_next/static|_next/image|favicon.ico|.*\\.[^.]+$).*)",
+  ],
 };

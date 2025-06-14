@@ -49,3 +49,29 @@ export const uploadImage = async (file: File): Promise<string> => {
     throw handleApiError(error);
   }
 };
+
+export const deleteArticle = async (id: string) => {
+  try {
+    const response = await authClient.delete(`/articles/${id}`);
+
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+export const updateArticle = async ({
+  id,
+  data,
+}: {
+  id: string;
+  data: CreateArticlePayload;
+}) => {
+  try {
+    const response = await authClient.put(`/articles/${id}`, data);
+
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};

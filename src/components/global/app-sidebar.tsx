@@ -14,6 +14,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAlertDialog } from "@/context/alert-dialog-context";
+import { useAuth } from "@/context/auth-context";
 
 const items = [
   {
@@ -33,6 +34,8 @@ export function AppSidebar() {
 
   const { showDialog } = useAlertDialog();
 
+  const { logout } = useAuth();
+
   const handleLogout = () => {
     showDialog({
       title: "Logout",
@@ -40,8 +43,7 @@ export function AppSidebar() {
       actionText: "Logout",
 
       onAction: () => {
-        // Logic for logout
-        console.log("User logged out");
+        logout();
       },
     });
   };

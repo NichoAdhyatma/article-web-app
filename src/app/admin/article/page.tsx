@@ -1,4 +1,5 @@
 import AdminTemplate from "@/components/pages/admin/admin-template";
+import { FilterProvider } from "@/context/filter-context";
 import { getArticles } from "@/lib/api/articles";
 import { getCategories } from "@/lib/api/category";
 import { ArticleQueryParams } from "@/lib/types/article";
@@ -29,12 +30,16 @@ const AdminPage = async ({ searchParams }: PageProps) => {
     limit,
     category,
     userId,
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
 
   const categoryResponse = await getCategories({});
 
   return (
-    <AdminTemplate articles={articleResponse} categories={categoryResponse} />
+    <FilterProvider>
+      <AdminTemplate articles={articleResponse} categories={categoryResponse} />
+    </FilterProvider>
   );
 };
 

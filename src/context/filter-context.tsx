@@ -29,7 +29,7 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (newTitle.trim()) {
-      params.set("title", newTitle.trim());
+      params.set("title", newTitle);
     } else {
       params.delete("title");
     }

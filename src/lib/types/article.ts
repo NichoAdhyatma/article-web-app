@@ -32,6 +32,7 @@ export interface ArticleQueryParams {
   category?: string;
   sortBy?: "createdAt" | "updatedAt" | "title";
   userId?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 export type CreateArticlePayload = {
