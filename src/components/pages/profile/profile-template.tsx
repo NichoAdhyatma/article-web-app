@@ -6,10 +6,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Box from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
 import Typography from "@/components/ui/typography";
+import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 
 const ProfileTemplate = () => {
   const router = useRouter();
+
+  const { user } = useAuth();
 
   const handleNavigateToHome = () => {
     router.push("/");
@@ -29,14 +32,14 @@ const ProfileTemplate = () => {
         <Box className="gap-6">
           <Avatar className="justify-center items-center w-[68px] h-[68px]">
             <AvatarFallback className="text-blue-900 bg-blue-200 font-medium text-2xl">
-              J
+              {user?.username?.charAt(0).toUpperCase() || "U"}
             </AvatarFallback>
           </Avatar>
 
           <Box className="gap-3">
-            <ProfileInformationBox label="Username" value="James Dean" />
-            <ProfileInformationBox label="Password" value="Admin123" />
-            <ProfileInformationBox label="Role" value="User" />
+            <ProfileInformationBox label="Username" value={user?.username} />
+            <ProfileInformationBox label="Password" value={user?.password} />
+            <ProfileInformationBox label="Role" value={user?.role} />
           </Box>
         </Box>
 

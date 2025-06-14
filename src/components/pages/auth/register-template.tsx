@@ -1,5 +1,6 @@
 "use client";
 
+import { useLogin, useRegister } from "@/lib/api/mutation/auth-mutation";
 import { FormInputField } from "@/components/global/form/form-input-field";
 import { FormSelectField } from "@/components/global/form/form-select-field";
 import { Box } from "@/components/ui/box";
@@ -21,21 +22,49 @@ const RegisterTemplate = () => {
     defaultValues: {
       username: "",
       password: "",
-      role: "user",
+      role: "User",
     },
   });
 
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, setError } = form;
 
   const router = useRouter();
+
+  const { mutate: mutateRegister } = useRegister();
+
+  const { mutate: mutateLogin } = useLogin();
 
   const handleNavigateToLogin = () => {
     router.push("/auth/login");
   };
 
   const onSubmit = (data: RegisterForm) => {
-    console.log("Form submitted with data:", data);
-    // Handle registration logic here
+    mutateRegister(data, {
+      onSuccess: () => {
+        // After successful registration, automatically log in the user
+        mutateLogin(
+          { username: data.username, password: data.password },
+          {
+            onSuccess: () => {
+              router.push("/");
+            },
+            onError: (error) => {
+              setError("username", {
+                type: "manual",
+                message: error.message,
+              });
+            },
+          }
+        );
+      },
+      onError: (error) => {
+        console.error("Registration failed:", error);
+        setError("username", {
+          type: "manual",
+          message: error.message,
+        });
+      },
+    });
   };
 
   return (
@@ -74,8 +103,8 @@ const RegisterTemplate = () => {
             label="Role"
             placeholder="Select Role"
             options={[
-              { label: "Admin", value: "admin" },
-              { label: "User", value: "user" },
+              { label: "Admin", value: "Admin" },
+              { label: "User", value: "User" },
             ]}
           />
         </Box>

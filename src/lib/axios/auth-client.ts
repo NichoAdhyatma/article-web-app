@@ -1,4 +1,6 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { getCookie } from "cookies-next";
+import { ApiError } from "../handle-api-error";
 
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -13,22 +15,35 @@ export const authClient = axios.create({
   },
 });
 
-authClient.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("access_token"); 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+authClient.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      const token = getCookie("authToken");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
+    return config;
+  },
+  (error: AxiosError) => {
+    console.error("❌ Request error:", error.message);
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 authClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  (error: AxiosError<ApiError>) => {
     if (error.response?.status === 401) {
-      console.warn("⚠️ Unauthorized request – token may be expired.");
+      console.warn("⚠️ Unauthorized – Token invalid or expired.");
+      window.location.href = "/auth/login";
     }
-    return Promise.reject(error);
+
+    const message =
+      error.response?.data?.message ||
+      error.response?.statusText ||
+      error.message;
+
+    return Promise.reject(new Error(message));
   }
 );

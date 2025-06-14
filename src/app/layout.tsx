@@ -3,6 +3,7 @@ import { Archivo } from "next/font/google";
 import "./globals.css";
 import { AlertDialogProvider } from "@/context/alert-dialog-context";
 import { ReactQueryClientProvider } from "@/components/provider/react-query-provider";
+import { AuthProvider } from "@/context/auth-context";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -23,7 +24,9 @@ export default function RootLayout({
     <ReactQueryClientProvider>
       <html lang="en">
         <body className={`${archivo.className} antialiased min-h-screen`}>
-          <AlertDialogProvider>{children}</AlertDialogProvider>
+          <AuthProvider>
+            <AlertDialogProvider>{children}</AlertDialogProvider>
+          </AuthProvider>
         </body>
       </html>
     </ReactQueryClientProvider>
