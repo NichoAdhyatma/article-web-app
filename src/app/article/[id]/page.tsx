@@ -1,5 +1,5 @@
 import ArticleDetailTemplate from "@/components/pages/article/article-detail-template";
-import { getArticles, getDetailedArticle } from "@/data/articles";
+import { getArticles, getDetailedArticle } from "@/lib/api/articles";
 
 interface PageProps {
   params: Promise<{ id: string }>;

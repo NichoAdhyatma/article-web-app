@@ -6,7 +6,7 @@ export const registerSchema = z.object({
     .string()
     .min(1, "Password field cannot be empty")
     .min(8, "Password must be at least 8 characters long"),
-  role: z.enum(["admin", "user"], {
+  role: z.enum(["Admin", "User"], {
     message: "Role must be either 'admin' or 'user'",
   }),
 });

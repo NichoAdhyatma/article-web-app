@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import Typography from "../ui/typography";
 import { LogOut } from "lucide-react";
 import { useAlertDialog } from "@/context/alert-dialog-context";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 
 interface AvatarProfileProps {
   textProfileColor?: string;
@@ -24,6 +26,10 @@ interface AvatarProfileProps {
 const AvatarProfile = ({ textProfileColor }: AvatarProfileProps) => {
   const { showDialog } = useAlertDialog();
 
+  const { user, logout } = useAuth();
+
+  const { push } = useRouter();
+
   const handleShowDialog = () => {
     showDialog({
       title: "Logout",
@@ -31,10 +37,13 @@ const AvatarProfile = ({ textProfileColor }: AvatarProfileProps) => {
       actionText: "Logout",
       variant: "destructive",
       onAction: () => {
-        // Logic for logout
-        console.log("User logged out");
+        logout();
       },
     });
+  };
+
+  const handleNavigateToProfile = () => {
+    push("/profile");
   };
 
   return (
@@ -44,7 +53,7 @@ const AvatarProfile = ({ textProfileColor }: AvatarProfileProps) => {
           <Box direction={"row"} className="gap-[6px]" fullWidth={false}>
             <Avatar className="justify-center items-center">
               <AvatarFallback className="text-blue-900 bg-blue-200 font-medium text-base">
-                J
+                {user?.username?.charAt(0).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
 
@@ -53,13 +62,15 @@ const AvatarProfile = ({ textProfileColor }: AvatarProfileProps) => {
               weight={"medium"}
               className={cn("underline hidden sm:block", textProfileColor)}
             >
-              James Dean
+              {user?.username}
             </Typography>
           </Box>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className="w-[224px] mr-10" align="start">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel onClick={handleNavigateToProfile}>
+            My Account
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem variant="destructive" onClick={handleShowDialog}>

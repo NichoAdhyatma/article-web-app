@@ -1,5 +1,6 @@
 "use client";
 
+import { useLogin } from "@/lib/api/mutation/auth-mutation";
 import { FormInputField } from "@/components/global/form/form-input-field";
 import { Box } from "@/components/ui/box";
 import { Button } from "@/components/ui/button";
@@ -24,9 +25,21 @@ const LoginTemplate = () => {
 
   const router = useRouter();
 
+  const { mutate } = useLogin();
+
   const onSubmit = (data: LoginForm) => {
-    console.log("Form submitted with data:", data);
-    // Handle login logic here
+    mutate(data, {
+      onSuccess: () => {
+        router.push("/")
+      },
+      onError: (error) => {
+        console.error("Login failed:", error);
+        form.setError("username", {
+          type: "manual",
+          message: error.message,
+        });
+      },
+    });
   };
 
   const handleNavigateToRegister = () => {

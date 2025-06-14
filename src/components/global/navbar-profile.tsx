@@ -4,9 +4,8 @@ import { Box } from "@/components/ui/box";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useMediaQuery } from "react-responsive";
-import AvatarProfile from "./avatar-profile";import { useRouter } from "next/navigation";
-;
-
+import AvatarProfile from "./avatar-profile";
+import { useRouter } from "next/navigation";
 interface NavbarProfileProps {
   responsive?: boolean;
   className?: string;
@@ -15,7 +14,9 @@ interface NavbarProfileProps {
 const NavbarProfile = ({ responsive, className }: NavbarProfileProps) => {
   const isSmallScreen = useMediaQuery({ maxWidth: 640 });
 
-  const router = useRouter()
+  const router = useRouter();
+
+  
 
   const imagePath = responsive
     ? isSmallScreen
@@ -53,7 +54,13 @@ const NavbarProfile = ({ responsive, className }: NavbarProfileProps) => {
         className
       )}
     >
-      <Image src={imagePath} width={134} height={24} alt="app-logo-white" onClick={() => router.push("/article")} />
+      <Image
+        src={imagePath}
+        width={134}
+        height={24}
+        alt="app-logo-white"
+        onClick={() => router.push("/article")}
+      />
 
       <AvatarProfile textProfileColor={textProfileColor} />
     </Box>

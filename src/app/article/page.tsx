@@ -1,8 +1,8 @@
 import HomeTemplate from "@/components/pages/home/home-template";
 import { CategoryProvider } from "@/context/category-context";
 import { FilterProvider } from "@/context/filter-context";
-import { getArticles } from "@/data/articles";
-import { getCategories } from "@/data/category";
+import { getArticles } from "@/lib/api/articles";
+import { getCategories } from "@/lib/api/category";
 import { ArticleQueryParams } from "@/lib/types/article";
 
 interface PageProps {
