@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authTokenName } from "./lib/constants";
+import { authRoleName, authTokenName } from "./lib/constants";
 
-const PUBLIC_PATHS = ["/", "/auth/login", "/auth/register"];
-const PRIVATE_PATHS = ["/profile", "/article", "/auth/logout"];
+const PUBLIC_PATHS = ["/auth/login", "/auth/register"];
+const PRIVATE_PATHS = [
+  "/profile",
+  "/article",
+  "/admin/article",
+  "/admin/category",
+  "/admin/profile",
+];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const authCookie = request.cookies.get(authTokenName);
+  const role = request.cookies.get(authRoleName);
 
   const isPublicPath = PUBLIC_PATHS.includes(pathname);
   const isPrivatePath = PRIVATE_PATHS.some((path) => pathname.startsWith(path));
@@ -16,7 +23,11 @@ export function middleware(request: NextRequest) {
   }
 
   if (authCookie && isPublicPath) {
-    return NextResponse.redirect(new URL("/article", request.url));
+    if (role && role.value === "Admin") {
+      return NextResponse.redirect(new URL("/admin/article", request.url));
+    } else if (role && role.value === "User") {
+      return NextResponse.redirect(new URL("/article", request.url));
+    }
   }
 
   return NextResponse.next();

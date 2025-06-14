@@ -5,6 +5,7 @@ import Box from "../ui/box";
 import Typography from "../ui/typography";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
 
 const HeaderProfile = () => {
   const pathName = usePathname();
@@ -18,11 +19,13 @@ const HeaderProfile = () => {
     "/admin/profile": "Profile",
   };
 
-  const router = useRouter();
+  const { user } = useAuth();
 
   const handleNavigateToProfile = () => {
     router.push("/admin/profile");
   };
+
+  const router = useRouter();
 
   return (
     <Box
@@ -47,7 +50,7 @@ const HeaderProfile = () => {
       >
         <Avatar className="justify-center items-center">
           <AvatarFallback className="text-blue-900 bg-blue-200 font-medium text-base">
-            J
+            {user?.username?.charAt(0).toUpperCase() || "U"}
           </AvatarFallback>
         </Avatar>
 
@@ -56,7 +59,7 @@ const HeaderProfile = () => {
           weight={"medium"}
           className={cn("underline hidden sm:block", "text-slate-900")}
         >
-          James Dean
+          {user?.username || "User"}
         </Typography>
       </Box>
     </Box>
