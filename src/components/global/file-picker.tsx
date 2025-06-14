@@ -10,7 +10,7 @@ import Typography from "../ui/typography";
 
 interface FilePickerProps {
   onFileSelect?: (file: File | null) => void;
-  value?: File | null;
+  value?: File | string | null;
   supportedTypes?: string;
   showPreview?: boolean;
   onBlur?: () => void;
@@ -41,13 +41,21 @@ export function FilePicker({
   }, [selectedFile]);
 
   useEffect(() => {
-    if (value) {
+    if (value instanceof File) {
       const objectUrl = URL.createObjectURL(value);
       setSelectedFile(value);
+
       setPreviewUrl(objectUrl);
       return () => URL.revokeObjectURL(objectUrl);
+    } else if (typeof value === "string") {
+      console.log("value is string", value);
+
+      setSelectedFile(null);
+
+      setPreviewUrl(value);
     } else {
       setSelectedFile(null);
+
       setPreviewUrl(null);
     }
   }, [value]);
@@ -113,11 +121,12 @@ export function FilePicker({
         onBlur={onBlur}
       />
 
-      {showPreview && previewUrl && selectedFile ? (
+      {showPreview && previewUrl || selectedFile ? (
         <Box className="p-3 rounded-[8px] max-w-[223px] border bg-white border-slate-200 gap-2">
           <Box className="max-w-[199px]">
             <ResponsiveImage
-              src={previewUrl}
+              src={previewUrl ?? ''}
+              unoptimized={selectedFile ? false : true}
               alt="preview-image"
               aspectRatio="199/115"
               rounded="rounded-md"

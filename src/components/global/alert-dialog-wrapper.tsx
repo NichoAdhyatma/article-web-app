@@ -21,6 +21,7 @@ interface AlertDialogWrapperProps {
   cancelText?: string;
   onAction?: () => void;
   onCancel?: () => void;
+  variant?: "default" | "destructive";
 }
 
 const AlertDialogWrapper = ({
@@ -33,6 +34,7 @@ const AlertDialogWrapper = ({
   onCancel,
   open,
   onOpenChange,
+  variant = "default",
 }: AlertDialogWrapperProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -44,7 +46,9 @@ const AlertDialogWrapper = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onCancel}>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction onClick={onAction}>{actionText}</AlertDialogAction>
+          <AlertDialogAction variant={variant} onClick={onAction}>
+            {actionText}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

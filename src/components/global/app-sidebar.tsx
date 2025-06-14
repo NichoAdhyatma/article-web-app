@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Inbox, Newspaper } from "lucide-react";
+import { Inbox, LogOut, Newspaper } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,27 +13,38 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useAlertDialog } from "@/context/alert-dialog-context";
 
 const items = [
   {
     title: "Articles",
-    url: "/admin",
+    url: "/admin/article",
     icon: Newspaper,
   },
   {
     title: "Category",
-    url: "#",
+    url: "/admin/category",
     icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
   },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+
+  const { showDialog } = useAlertDialog();
+
+  const handleLogout = () => {
+    showDialog({
+      title: "Logout",
+      description: "Are you sure you want to logout?",
+      actionText: "Logout",
+
+      onAction: () => {
+        // Logic for logout
+        console.log("User logged out");
+      },
+    });
+  };
 
   return (
     <Sidebar>
@@ -62,6 +73,13 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout}>
+                  <LogOut />
+                  <span>Logout</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

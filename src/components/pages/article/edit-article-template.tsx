@@ -18,15 +18,22 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
-const CreateArticlePage = () => {
+interface EditArticleTemplateProps {
+  article: Omit<CreateArticleForm, "thumbnail"> & {
+    thumbnailUrl?: string;
+  };
+}
+
+const EditArticleTemplate = ({ article }: EditArticleTemplateProps) => {
   const router = useRouter();
 
   const form = useForm<CreateArticleForm>({
     resolver: zodResolver(createArticleSchema),
     defaultValues: {
-      title: "",
-      category: "",
-      content: "",
+      title: article.title || "",
+      content: article.content || "",
+      category: article.category || "",
+      thumbnail: article.thumbnailUrl,
     },
   });
 
@@ -36,9 +43,16 @@ const CreateArticlePage = () => {
     router.push("/admin/category");
   };
 
+  const handleNavigateBack = () => {
+    router.back();
+  };
+
+  const handleNavigateToPreview = () => {
+    router.push("/admin/article/preview");
+  };
+
   const onSubmit = (data: CreateArticleForm) => {
     console.log("Submitted Data:", data);
-    // Handle the form submission logic here
   };
 
   return (
@@ -49,14 +63,19 @@ const CreateArticlePage = () => {
         justify={"start"}
         className="gap-2"
       >
-        <ArrowLeft width={20} height={20} className="text-slate-900" />
+        <ArrowLeft
+          onClick={handleNavigateBack}
+          width={20}
+          height={20}
+          className="text-slate-900 hover:cursor-pointer"
+        />
 
         <Typography
           weight={"medium"}
           size={"textBase"}
           className="text-slate-900"
         >
-          Create Articles
+          Edit Articles
         </Typography>
       </Box>
 
@@ -111,10 +130,18 @@ const CreateArticlePage = () => {
       </Form>
 
       <Box direction={"row"} justify={"end"} className="gap-2 py-4 mt-6">
-        <Button variant={"outline"} fullWidth={false}>
+        <Button
+          variant={"outline"}
+          onClick={handleNavigateBack}
+          fullWidth={false}
+        >
           Cancel
         </Button>
-        <Button variant={"secondary"} fullWidth={false}>
+        <Button
+          onClick={handleNavigateToPreview}
+          variant={"secondary"}
+          fullWidth={false}
+        >
           Preview
         </Button>
         <Button onClick={handleSubmit(onSubmit)} fullWidth={false}>
@@ -125,4 +152,4 @@ const CreateArticlePage = () => {
   );
 };
 
-export default CreateArticlePage;
+export default EditArticleTemplate;

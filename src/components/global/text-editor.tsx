@@ -43,7 +43,7 @@ export function RichTextEditor({
   const [isJustifyFull, setIsJustifyFull] = useState(false);
 
   useEffect(() => {
-    if (editorRef.current) {
+    if (editorRef.current && editorRef.current.innerHTML !== initialValue) {
       editorRef.current.innerHTML = initialValue;
       countCharacters(initialValue);
     }

@@ -14,16 +14,28 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { cn } from "@/lib/utils";
 
 import Typography from "../ui/typography";
-import AlertDialogWrapper from "./alert-dialog-wrapper";
 import { LogOut } from "lucide-react";
-import { useState } from "react";
+import { useAlertDialog } from "@/context/alert-dialog-context";
 
 interface AvatarProfileProps {
   textProfileColor?: string;
 }
 
 const AvatarProfile = ({ textProfileColor }: AvatarProfileProps) => {
-  const [open, setOpen] = useState(false);
+  const { showDialog } = useAlertDialog();
+
+  const handleShowDialog = () => {
+    showDialog({
+      title: "Logout",
+      description: "Are you sure want to logout?",
+      actionText: "Logout",
+      variant: "destructive",
+      onAction: () => {
+        // Logic for logout
+        console.log("User logged out");
+      },
+    });
+  };
 
   return (
     <>
@@ -45,14 +57,12 @@ const AvatarProfile = ({ textProfileColor }: AvatarProfileProps) => {
             </Typography>
           </Box>
         </DropdownMenuTrigger>
+
         <DropdownMenuContent className="w-[224px] mr-10" align="start">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => setOpen(true)}
-            >
+            <DropdownMenuItem variant="destructive" onClick={handleShowDialog}>
               <LogOut fontWeight={500} />
               <Typography size={"textSm"} weight={"medium"}>
                 Log out
@@ -61,14 +71,6 @@ const AvatarProfile = ({ textProfileColor }: AvatarProfileProps) => {
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <AlertDialogWrapper
-        open={open}
-        onOpenChange={setOpen}
-        title="Logout"
-        description="Are you sure want to logout?"
-        actionText="Logout"
-      />
     </>
   );
 };
