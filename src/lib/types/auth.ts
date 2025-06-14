@@ -10,6 +10,7 @@ export type LoginPayload = {
 };
 
 export type AuthUser = {
+  id: string;
   username: string;
   role: "User" | "Admin";
   password: string;

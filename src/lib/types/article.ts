@@ -31,4 +31,12 @@ export interface ArticleQueryParams {
   limit?: number;
   category?: string;
   sortBy?: "createdAt" | "updatedAt" | "title";
+  userId?: string;
 }
+
+export type CreateArticlePayload = {
+  title: string;
+  content: string;
+  categoryId: string;
+  imageUrl?: string;
+};

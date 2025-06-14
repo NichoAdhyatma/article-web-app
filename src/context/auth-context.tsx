@@ -42,8 +42,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .then((profile) => {
           setUser({
             ...profile,
-            password: (getCookie("password") as string | undefined) ?? "", // Password is not returned from the API, set it to empty string
+            password: (getCookie("password") as string | undefined) ?? "",
           });
+          setCookie("userId", profile.id || "");
         })
         .catch(() => logout())
         .finally(() => setLoading(false));
@@ -56,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setCredentials(newCredentials);
     setCookie(authTokenName, newCredentials.token);
     setCookie(authRoleName, newCredentials.role);
-    setCookie("password", password); 
+    setCookie("password", password);
 
     getProfile()
       .then((profile) => {
@@ -64,6 +65,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           ...profile,
           password,
         });
+
+        setCookie("userId", profile.id || "");
       })
       .catch(() => logout());
   };
@@ -75,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     deleteCookie(authRoleName);
     deleteCookie("password");
 
-    window.location.href = "/auth/login"; 
+    window.location.href = "/auth/login";
   };
 
   return (
