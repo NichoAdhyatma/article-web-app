@@ -25,7 +25,7 @@ export default function SelectBuilder({
   placeholder = "Select an option",
   value,
   onChange,
-  className,
+  className = "max-w-sm w-fit",
   withClearOption = true,
   clearLabel = "All",
 }: ReusableSelectProps) {
@@ -43,7 +43,7 @@ export default function SelectBuilder({
 
   return (
     <Select value={value ?? CLEAR_VALUE} onValueChange={handleValueChange}>
-      <SelectTrigger className={className ?? "w-fit"}>
+      <SelectTrigger className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
 
