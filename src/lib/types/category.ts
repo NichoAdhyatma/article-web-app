@@ -12,3 +12,9 @@ export type CategoryResponse = {
   currentPage?: number;
   totalPages?: number;
 };
+
+export type CategoryQueryParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+};

@@ -4,6 +4,8 @@ import "./globals.css";
 import { AlertDialogProvider } from "@/context/alert-dialog-context";
 import { ReactQueryClientProvider } from "@/components/provider/react-query-provider";
 import { AuthProvider } from "@/context/auth-context";
+import { Toaster } from "react-hot-toast";
+import { ArticlePreviewProvider } from "@/context/article-preview-context";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -25,10 +27,13 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${archivo.className} antialiased min-h-screen`}>
           <AuthProvider>
-            <AlertDialogProvider>{children}</AlertDialogProvider>
+            <ArticlePreviewProvider>
+              <AlertDialogProvider>{children}</AlertDialogProvider>
+            </ArticlePreviewProvider>
           </AuthProvider>
         </body>
       </html>
+      <Toaster />
     </ReactQueryClientProvider>
   );
 }

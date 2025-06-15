@@ -5,10 +5,12 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 type FilterContextType = {
   title: string;
+  search: string;
   page: number;
   limit: number;
-  category: string; // Assuming you want to add category later
+  category: string;
   handleSearch: (title: string) => void;
+  handleCategorySearch: (category: string) => void;
   handlePageChange: (page: number) => void;
   handleCategoryChange: (category: string) => void;
 };
@@ -24,12 +26,29 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const page = parseInt(searchParams.get("page") || "1", 10);
   const limit = parseInt(searchParams.get("limit") || "9", 10);
   const category = searchParams.get("category") ?? "";
+  const search = searchParams.get("search") ?? "";
+
+  const handleCategorySearch = (newTitle: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (newTitle.trim()) {
+      params.set("search", newTitle);
+    } else {
+      params.delete("search");
+    }
+
+    params.set("page", "1");
+
+    params.set("limit", limit.toString());
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const handleSearch = (newTitle: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (newTitle.trim()) {
-      params.set("title", newTitle.trim());
+      params.set("title", newTitle);
     } else {
       params.delete("title");
     }
@@ -45,6 +64,8 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
     const params = new URLSearchParams(searchParams.toString());
 
     params.set("page", newPage.toString());
+    
+    params.set("limit", limit.toString());
 
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
@@ -68,14 +89,16 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       title,
       page,
+      search,
       limit,
       category,
       handleSearch,
       handlePageChange,
       handleCategoryChange,
+      handleCategorySearch,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [title, page, limit, category]
+    [title, page, limit, category, search]
   );
 
   return (

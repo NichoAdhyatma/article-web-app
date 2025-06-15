@@ -1,11 +1,55 @@
+"use client";
+
 import NavbarFooterLayout from "@/components/global/layout/navbar-footer-layout";
 import ListArticleCard from "@/components/global/list-article-card";
 import { ResponsiveImage } from "@/components/global/responsive-image";
 import Box from "@/components/ui/box";
 import Typography from "@/components/ui/typography";
+import { useArticlePreview } from "@/context/article-preview-context";
+import { useAuth } from "@/context/auth-context";
+import { getArticles } from "@/lib/api/articles";
+import { dummyArticles } from "@/lib/constants";
 import { dateFormat } from "@/lib/format/date-format";
+import { Article } from "@/lib/types/article";
+import { useEffect, useState } from "react";
 
 const ArticlePreviewTemplate = () => {
+  const { article } = useArticlePreview();
+
+  const [otherArticles, setOtherArticles] = useState<Article[]>([]);
+
+  const { user } = useAuth();
+
+  const fetchOtherArticles = async () => {
+    if (!article || !article.category) {
+      return;
+    }
+
+    try {
+      const articles = await getArticles({
+        category: article.category,
+        limit: 3,
+        page: 1,
+        sortBy: "createdAt",
+      });
+      if (!articles || !articles.data) {
+        return;
+      }
+      setOtherArticles(articles.data);
+    } catch (error) {
+      console.error("Failed to fetch other articles:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOtherArticles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [article]);
+
+  if (!article) {
+    return <Typography>No article preview available</Typography>;
+  }
+
   return (
     <NavbarFooterLayout>
       <Box className="py-10 max-w-[1120px] mx-auto gap-7 px-5">
@@ -31,17 +75,17 @@ const ArticlePreviewTemplate = () => {
               weight={"medium"}
               className="text-slate-600"
             >
-              Created by Admin
+              Created by {user?.username || "Unknown"}
             </Typography>
           </Box>
 
           <Typography size={"text3xl"} weight={"semibold"} align={"center"}>
-            {"Figma's"} New Dev Mode: A Game-Changer for Designers & Developers
+            {article.title}
           </Typography>
         </Box>
 
         <ResponsiveImage
-          src="https://placehold.co/600x400"
+          src={article.thumbnailPreview || "/placeholder-img.png"}
           alt="placeholder-img"
           aspectRatio="1120/480"
           objectFit="cover"
@@ -50,27 +94,10 @@ const ArticlePreviewTemplate = () => {
           unoptimized
         />
 
-        <Typography size={"textBase"} className="text-slate-700">
-          In the ever-evolving world of digital product design, collaboration
-          between designers and developers has always been a crucial—yet often
-          challenging—part of the process. In April 2025, Figma introduced Dev
-          Mode, a powerful new feature aimed at streamlining that collaboration
-          more than ever before. 🔧 What Is Dev Mode? Dev Mode is a new
-          interface within Figma that provides developer-focused tools and
-          removes unnecessary UI clutter that designers typically use. Instead,
-          developers can view ready-to-implement specs, such as spacing, color
-          values, font styles, and asset exports—without disrupting the design
-          file or asking the design team for clarifications. 🤝 Bridging the Gap
-          Between Design & Development Traditionally, handing off designs
-          involved back-and-forth communication, misunderstandings, and
-          occasional delays. With Dev Mode, handoff becomes real-time and
-          seamless: Live Design Specs: Developers can inspect the design without
-          needing additional tools or extensions. Code Snippets: Automatically
-          generated CSS, iOS (Swift), and Android (XML) code help speed up
-          implementation. Version History Access: Stay aligned with design
-          updates without asking for a new export every time. Integrated
-          Comments: Developers can leave feedback directly in the design file.
-        </Typography>
+        <div
+          dangerouslySetInnerHTML={{ __html: article.content as string }}
+          className="text-base text-slate-700"
+        />
       </Box>
 
       <Box
@@ -81,7 +108,7 @@ const ArticlePreviewTemplate = () => {
           Other articles
         </Typography>
 
-        <ListArticleCard length={3} />
+        <ListArticleCard articles={otherArticles ?? dummyArticles} />
       </Box>
     </NavbarFooterLayout>
   );

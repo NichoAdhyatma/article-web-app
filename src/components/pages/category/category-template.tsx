@@ -18,43 +18,76 @@ import {
 } from "@/components/ui/table";
 import Typography from "@/components/ui/typography";
 import { useAlertDialog } from "@/context/alert-dialog-context";
+import { useFilterContext } from "@/context/filter-context";
+import useDebounce from "@/hooks/use-debounce";
+import { useDeleteCategory } from "@/lib/api/mutation/category-mutation";
+import { dateFormat } from "@/lib/format/date-format";
+import { CategoryResponse } from "@/lib/types/category";
+import { cn } from "@/lib/utils";
 import { Search, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
-const dummyData = [
-  {
-    id: 1,
-    title: "Web Development Basics",
-    category: "Frontend",
-    createdAt: "April 13, 2025 10:55:12",
-  },
-  {
-    id: 2,
-    title: "Understanding Backend Technologies",
-    category: "Backend",
-    createdAt: "April 14, 2025 11:00:00",
-  },
-];
+interface CategoryTemplateProps {
+  categories: CategoryResponse;
+}
 
-const CategoryTemplate = () => {
+const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
   const { showDialog } = useAlertDialog();
 
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+
   const [openCreateCategoryDialog, setOpenCreateCategoryDialog] =
     useState(false);
+
+  const { handleCategorySearch, handlePageChange } = useFilterContext();
+
+  const { mutate: deleteCategory, isPending: isPendingDeleteCategory } =
+    useDeleteCategory();
+
+  const [search, setSearch] = useState("");
+
+  const debuncedSearch = useDebounce(search, 500);
+
+  useEffect(
+    () => {
+      handleCategorySearch(debuncedSearch);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [debuncedSearch]
+  );
 
   const handleNavigateAddCategory = () => {
     setOpenCreateCategoryDialog(true);
   };
 
-  const handleDeleteCategory = (articleId: number) => {
-    // Logic to delete the article
-    console.log(`Deleting category with ID: ${articleId}`);
+  const handleDeleteCategory = (articleId?: string) => {
+    if (!articleId) {
+      toast.error("Category ID is required to delete.");
+      return;
+    }
+
+    deleteCategory(articleId, {
+      onSuccess: () => {
+        toast.success("Category deleted successfully.");
+        router.refresh();
+      },
+      onError: (error) => {
+        toast.error(`Failed to delete category: ${error.message}`);
+      },
+    });
   };
 
-  const handleShowAlertDeleteDialog = (articleId: number, name: string) => {
+  const handleShowAlertDeleteDialog = ({
+    articleId,
+    name,
+  }: {
+    articleId?: string;
+    name: string;
+  }) => {
     showDialog({
       title: "Delete Article",
       description: `Delete category "${name}"? This will remove it from master data permanently.`,
@@ -68,12 +101,28 @@ const CategoryTemplate = () => {
     categoryId,
     categoryName,
   }: {
-    categoryId: number;
+    categoryId?: string;
     categoryName: string;
   }) => {
-    router.replace(`?id=${categoryId}&name=${categoryName}`, {
-      scroll: false,
-    });
+    if (!categoryId) {
+      toast.error("Category ID is required to edit.");
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("id", categoryId ?? "");
+    params.set("name", categoryName);
+
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  const handleCloseEditCategoryDialog = () => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete("id");
+    params.delete("name");
+
+    router.replace(`?${params.toString()}`, { scroll: false });
   };
 
   return (
@@ -84,7 +133,7 @@ const CategoryTemplate = () => {
           weight={"medium"}
           className="text-slate-800"
         >
-          Total Category : 25
+          Total Category : {categories.totalData}
         </Typography>
       </Box>
 
@@ -98,6 +147,10 @@ const CategoryTemplate = () => {
             leftIcon={<Search width={20} height={20} />}
             className="bg-transparent flex-1 w-full"
             placeholder="Search by title"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
           />
         </Box>
 
@@ -121,79 +174,88 @@ const CategoryTemplate = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyData.map((category) => (
-              <TableRow key={category.id}>
-                <TableCell>
-                  <Box className="py-3 px-4">
-                    <Typography
-                      align={"center"}
-                      className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
-                    >
-                      {category.category}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box className="py-3 px-4">
-                    <Typography
-                      align={"center"}
-                      className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
-                    >
-                      {category.createdAt}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box direction={"row"} className="gap-3">
-                    <Suspense fallback={null}>
-                      <EditCategoryDialog
-                        trigger={
-                          <Typography
-                            size={"textSm"}
-                            weight={"regular"}
-                            onClick={() =>
-                              handleEditCategoryId({
-                                categoryId: category.id,
-                                categoryName: category.category,
-                              })
-                            }
-                            className="text-blue-600 underline hover:cursor-pointer"
-                          >
-                            Edit
-                          </Typography>
-                        }
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            router.replace("/admin/category", {
-                              scroll: false,
-                            });
+            {Array.isArray(categories.data) &&
+              categories.data.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell>
+                    <Box className="py-3 px-4">
+                      <Typography
+                        align={"center"}
+                        className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
+                      >
+                        {category.name}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box className="py-3 px-4">
+                      <Typography
+                        align={"center"}
+                        className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
+                      >
+                        {dateFormat.MMMMdyyyyHHmm(category.createdAt ?? "")}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box direction={"row"} className="gap-3">
+                      <Suspense fallback={null}>
+                        <EditCategoryDialog
+                          trigger={
+                            <Typography
+                              size={"textSm"}
+                              weight={"regular"}
+                              onClick={() =>
+                                handleEditCategoryId({
+                                  categoryId: category.id,
+                                  categoryName: category.name ?? "-",
+                                })
+                              }
+                              className="text-blue-600 underline hover:cursor-pointer"
+                            >
+                              Edit
+                            </Typography>
                           }
-                        }}
-                      />
-                    </Suspense>
+                          onOpenChange={(open) => {
+                            if (!open) {
+                              handleCloseEditCategoryDialog();
+                            }
+                          }}
+                        />
+                      </Suspense>
 
-                    <Typography
-                      size={"textSm"}
-                      weight={"regular"}
-                      className="text-red-500 underline hover:cursor-pointer"
-                      onClick={() =>
-                        handleShowAlertDeleteDialog(
-                          category.id,
-                          category.category
-                        )
-                      }
-                    >
-                      Delete
-                    </Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
+                      <Typography
+                        size={"textSm"}
+                        weight={"regular"}
+                        className={cn(
+                          " underline hover:cursor-pointer text-red-500",
+                          isPendingDeleteCategory && "text-gray-400"
+                        )}
+                        onClick={
+                          isPendingDeleteCategory
+                            ? () => {}
+                            : () =>
+                                handleShowAlertDeleteDialog({
+                                  articleId: category.id,
+                                  name: category.name ?? "-",
+                                })
+                        }
+                      >
+                        {isPendingDeleteCategory ? "Deleting..." : "Delete"}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
           <TableFooter>
             <TableRow>
               <TableCell colSpan={5} className="text-center py-6 px-4">
-                <PaginationBuilder currentPage={1} totalPages={5} />
+                <PaginationBuilder
+                  currentPage={categories.currentPage ?? 1}
+                  totalPages={categories.totalPages ?? 1}
+                  onPageChange={handlePageChange}
+                />
               </TableCell>
             </TableRow>
           </TableFooter>

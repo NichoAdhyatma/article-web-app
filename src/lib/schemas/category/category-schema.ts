@@ -1,9 +1,9 @@
 import z from "zod";
 
 export const categorySchema = z.object({
-  category: z
+  name: z
     .string()
-    .min(1, "Category is required")
+    .min(1, "Category name is required")
     .max(100, "Category must be less than 100 characters"),
 });
 

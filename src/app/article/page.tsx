@@ -25,6 +25,8 @@ const HomePage = async ({ searchParams }: PageProps) => {
     page,
     limit,
     category,
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
 
   const categoryResponse = await getCategories({});

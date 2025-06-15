@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import Typography from "../ui/typography";
 import Box from "../ui/box";
+import { useUploadImage } from "@/lib/api/mutation/article-mutation";
 
 interface RichTextEditorProps {
   value?: string;
@@ -143,20 +144,33 @@ export function RichTextEditor({
     }
   };
 
+  const { mutate } = useUploadImage();
+
   const handleImageUpload = () => {
     const input = document.createElement("input");
+
     input.type = "file";
     input.accept = "image/*";
     input.onchange = (e) => {
       const target = e.target as HTMLInputElement;
       if (target.files && target.files[0]) {
         const file = target.files[0];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          execCommand("insertImage", result);
-        };
-        reader.readAsDataURL(file);
+        // const reader = new FileReader();
+        // reader.onload = (e) => {
+        //   const result = e.target?.result as string;
+        //   execCommand("insertImage", result);
+        // };
+
+        // reader.readAsDataURL(file);
+
+        mutate(file, {
+          onSuccess: (data) => {
+            execCommand("insertImage", data);
+          },
+          onError: (error) => {
+            console.error("Image upload failed:", error);
+          },
+        });
       }
     };
     input.click();

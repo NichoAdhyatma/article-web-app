@@ -30,9 +30,9 @@ const RegisterTemplate = () => {
 
   const router = useRouter();
 
-  const { mutate: mutateRegister } = useRegister();
+  const { mutate: mutateRegister, isPending: isPendingRegister } = useRegister();
 
-  const { mutate: mutateLogin } = useLogin();
+  const { mutate: mutateLogin, isPending: isPendingLogin } = useLogin();
 
   const handleNavigateToLogin = () => {
     router.push("/auth/login");
@@ -111,8 +111,8 @@ const RegisterTemplate = () => {
       </Form>
 
       {/* Footer */}
-      <Button fullWidth={true} onClick={handleSubmit(onSubmit)}>
-        Login
+      <Button isLoading={isPendingLogin || isPendingRegister} fullWidth={true} onClick={handleSubmit(onSubmit)}>
+        Register 
       </Button>
 
       <Typography size={"textSm"} weight={"medium"}>

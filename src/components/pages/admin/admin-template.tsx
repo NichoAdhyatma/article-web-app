@@ -20,57 +20,114 @@ import { Plus, Search } from "lucide-react";
 import AdminBoxWrapper from "./admin-box-wraper";
 import { useRouter } from "next/navigation";
 import { useAlertDialog } from "@/context/alert-dialog-context";
+import { ArticleResponse } from "@/lib/types/article";
+import { CategoryResponse } from "@/lib/types/category";
+import { useEffect, useMemo, useState } from "react";
+import { dateFormat } from "@/lib/format/date-format";
+import { useDeleteArticle } from "@/lib/api/mutation/article-mutation";
+import toast from "react-hot-toast";
+import { useArticlePreview } from "@/context/article-preview-context";
+import { useFilterContext } from "@/context/filter-context";
+import useDebounce from "@/hooks/use-debounce";
 
-const dummyData = [
-  {
-    id: 1,
-    title: "Cybersecurity Essentials Every Developer Should Know",
-    category: "React",
-    createdAt: "April 13, 2025 10:55:12",
-    thumbnail: "https://placehold.co/600x400",
-  },
-  {
-    id: 2,
-    title: "Cybersecurity Essentials Every Developer Should Know",
-    category: "React",
-    createdAt: "April 13, 2025 10:55:12",
-    thumbnail: "https://placehold.co/600x400",
-  },
-];
+interface ArticlesAdminProps {
+  articles: ArticleResponse;
+  categories: CategoryResponse;
+}
 
-const categoryOptions = [
-  { label: "Technology", value: "tech" },
-  { label: "Health", value: "health" },
-  { label: "Education", value: "edu" },
-];
-
-const AdminTemplate = () => {
+const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
   const router = useRouter();
 
   const { showDialog } = useAlertDialog();
+
+  const { mutate } = useDeleteArticle();
+
+  const { clearArticle } = useArticlePreview();
 
   const handleNavigateAddArticle = () => {
     router.push("/admin/article/create");
   };
 
-  const handleDeleteArticle = (articleId: number) => {
-    // Logic to delete the article
-    console.log(`Deleting article with ID: ${articleId}`);
+  const {
+    category,
+    title,
+    handlePageChange,
+    handleCategoryChange,
+    handleSearch,
+  } = useFilterContext();
+
+  const [search, setSearch] = useState(title);
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  const [localCategory, setLocalCategory] = useState(category);
+
+  useEffect(() => {
+    handleSearch(debouncedSearch);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    handleCategoryChange(localCategory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localCategory]);
+
+  const handleDeleteArticle = ({
+    articleId,
+    articleTitle,
+  }: {
+    articleId?: string;
+    articleTitle?: string;
+  }) => {
+    if (!articleId) {
+      return;
+    }
+    mutate(articleId, {
+      onSuccess: () => {
+        router.refresh();
+        toast.success(
+          `Article with Title ${articleTitle} has been successfully deleted.`
+        );
+      },
+      onError: (error) => {
+        console.error(
+          `Failed to delete article with Title ${articleTitle}:`,
+          error
+        );
+      },
+    });
   };
 
-  const handleEditArticle = (articleId: number) => {
+  const handleEditArticle = (articleId?: string) => {
+    if (!articleId) {
+      return;
+    }
     // Logic to edit the article
+    clearArticle();
+
     console.log(`Editing article with ID: ${articleId}`);
     router.push(`/admin/article/edit/${articleId}`);
   };
 
-  const handlePreviewArticle = (articleId: number) => {
-    // Logic to preview the article
-    console.log(`Previewing article with ID: ${articleId}`);
+  const handlePreviewArticle = (articleId?: string) => {
+    if (!articleId) {
+      return;
+    }
+
     router.push(`/article/${articleId}`);
   };
 
-  const handleShowAlertDeleteDialog = (articleId: number) => {
+  const handleShowAlertDeleteDialog = ({
+    articleId,
+    articleTitle,
+  }: {
+    articleId?: string;
+    articleTitle?: string;
+  }) => {
+    if (!articleId) {
+      return;
+    }
     // Logic to show alert dialog for deleting the article
     console.log(`Showing delete dialog for article with ID: ${articleId}`);
     showDialog({
@@ -79,9 +136,31 @@ const AdminTemplate = () => {
         "Deleting this article is permanent and cannot be undone. All related content will be removed.",
       actionText: "Delete",
       variant: "destructive",
-      onAction: () => handleDeleteArticle(articleId),
+      onAction: () =>
+        handleDeleteArticle({
+          articleId,
+          articleTitle: articleTitle || "Unknown Article",
+        }),
     });
   };
+
+  const getTotalPages = useMemo(() => {
+    if (!articles || !articles.total || !articles.limit) {
+      return 0;
+    }
+
+    return Math.ceil(articles?.total / articles?.limit);
+  }, [articles]);
+
+  const categoriesOptions =
+    categories.data
+      ?.filter(
+        (c) => c.id && c.name && c.id.trim() !== "" && c.name.trim() !== ""
+      )
+      .map((c) => ({
+        value: c.id as string,
+        label: c.name as string,
+      })) ?? [];
 
   return (
     <AdminBoxWrapper>
@@ -102,15 +181,27 @@ const AdminTemplate = () => {
       >
         <Box direction={"row"} className="gap-2 max-w-[357px]">
           <SelectBuilder
-            options={categoryOptions}
+            options={categoriesOptions}
+            value={localCategory}
             placeholder="Select Category"
-            value={"tech"}
+            onChange={(value) => {
+              if (!value || value === "") {
+                value = "";
+              }
+
+              setLocalCategory(value);
+            }}
           />
 
           <Input
             leftIcon={<Search width={20} height={20} />}
             className="bg-transparent flex-1 w-full"
             placeholder="Search by title"
+            value={search}
+            onChange={(e) => {
+              console.log("Search input changed:", e.target.value);
+              setSearch(e.target.value);
+            }}
           />
         </Box>
 
@@ -131,82 +222,104 @@ const AdminTemplate = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyData.map((article) => (
-              <TableRow key={article.id}>
-                <TableCell>
-                  <Box className="w-[60px] h-[60px] mx-auto">
-                    <ResponsiveImage
-                      src={article.thumbnail}
-                      alt={article.title}
-                      rounded="rounded-[6px]"
-                      aspectRatio="60/60"
-                      unoptimized
-                    />
-                  </Box>
-                </TableCell>
-                <TableCell>
+            {Array.isArray(articles?.data) && articles.data?.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-6 px-4">
                   <Box>
-                    <Typography className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2">
-                      {article.title}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box>
-                    <Typography
-                      align={"center"}
-                      className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
-                    >
-                      {article.category}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box>
-                    <Typography
-                      align={"center"}
-                      className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
-                    >
-                      {article.createdAt}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box direction={"row"} className="gap-3">
-                    <Typography
-                      size={"textSm"}
-                      weight={"regular"}
-                      className="text-blue-600 underline hover:cursor-pointer"
-                      onClick={() => handlePreviewArticle(article.id)}
-                    >
-                      Preview
-                    </Typography>
-                    <Typography
-                      size={"textSm"}
-                      weight={"regular"}
-                      onClick={() => handleEditArticle(article.id)}
-                      className="text-blue-600 underline hover:cursor-pointer"
-                    >
-                      Edit
-                    </Typography>
-
-                    <Typography
-                      size={"textSm"}
-                      weight={"regular"}
-                      className="text-red-500 underline hover:cursor-pointer"
-                      onClick={() => handleShowAlertDeleteDialog(article.id)}
-                    >
-                      Delete
+                    <Typography size={"textBase"} weight={"medium"}>
+                      No articles found.
                     </Typography>
                   </Box>
                 </TableCell>
               </TableRow>
-            ))}
+            )}
+
+            {Array.isArray(articles?.data) &&
+              articles.data?.map((article) => (
+                <TableRow key={article.id}>
+                  <TableCell>
+                    <Box className="w-[60px] h-[60px] mx-auto">
+                      <ResponsiveImage
+                        src={article.imageUrl || "https://placehold.co/600x400"}
+                        alt={article.imageUrl || "Article Thumbnail"}
+                        rounded="rounded-[6px]"
+                        aspectRatio="60/60"
+                        unoptimized
+                      />
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2">
+                        {article.title}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography
+                        align={"center"}
+                        className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
+                      >
+                        {article.category?.name || "-"}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography
+                        align={"center"}
+                        className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
+                      >
+                        {dateFormat.MMMMdyyyyHHmm(article.createdAt ?? "")}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box direction={"row"} className="gap-3">
+                      <Typography
+                        size={"textSm"}
+                        weight={"regular"}
+                        className="text-blue-600 underline hover:cursor-pointer"
+                        onClick={() => handlePreviewArticle(article.id)}
+                      >
+                        Preview
+                      </Typography>
+                      <Typography
+                        size={"textSm"}
+                        weight={"regular"}
+                        onClick={() => handleEditArticle(article.id)}
+                        className="text-blue-600 underline hover:cursor-pointer"
+                      >
+                        Edit
+                      </Typography>
+
+                      <Typography
+                        size={"textSm"}
+                        weight={"regular"}
+                        className="text-red-500 underline hover:cursor-pointer"
+                        onClick={() =>
+                          handleShowAlertDeleteDialog({
+                            articleId: article.id,
+                            articleTitle: article.title,
+                          })
+                        }
+                      >
+                        Delete
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
           <TableFooter>
             <TableRow>
               <TableCell colSpan={5} className="text-center py-6 px-4">
-                <PaginationBuilder currentPage={1} totalPages={5} />
+                <PaginationBuilder
+                  currentPage={articles.page ?? 1}
+                  totalPages={getTotalPages}
+                  onPageChange={handlePageChange}
+                />
               </TableCell>
             </TableRow>
           </TableFooter>

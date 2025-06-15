@@ -25,7 +25,7 @@ const LoginTemplate = () => {
 
   const router = useRouter();
 
-  const { mutate } = useLogin();
+  const { mutate, isPending } = useLogin();
 
   const onSubmit = (data: LoginForm) => {
     mutate(data, {
@@ -79,7 +79,7 @@ const LoginTemplate = () => {
       </Form>
 
       {/* Footer */}
-      <Button fullWidth={true} onClick={form.handleSubmit(onSubmit)}>
+      <Button isLoading={isPending} fullWidth={true} onClick={form.handleSubmit(onSubmit)}>
         Login
       </Button>
 
