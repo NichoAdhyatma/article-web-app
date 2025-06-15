@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📝 Article Web App
 
-## Getting Started
+A full-featured web application to manage articles with role-based access, built using **Next.js App Router**, **React Query**, **Zod**, and **Tailwind CSS**.
 
-First, run the development server:
+---
+
+## ✅ Fitur Utama
+
+- Login & Otentikasi berbasis Role (`Admin` dan `User`)
+- Halaman khusus untuk `Admin` untuk:
+  - Menambahkan artikel
+  - Mengedit artikel
+  - Menghapus artikel
+- User biasa dapat melihat daftar artikel
+- Validasi form dengan React Hook Form + Zod
+- Komponen UI yang reusable (Dialog, Form, Button)
+- Responsive dan dark mode siap pakai
+- Penanganan state asinkron dengan React Query
+- Struktur folder modular dan scalable
+
+---
+
+## 🛠️ Teknologi yang Digunakan
+
+| Kategori       | Teknologi                |
+|----------------|--------------------------|
+| Frontend       | Next.js App Router       |
+| State/Data     | React Query              |
+| Form           | React Hook Form + Zod    |
+| Komponen UI    | TailwindCSS, Radix UI    |
+| Notifikasi     | React Hot Toast          |
+| Routing        | Dynamic + query params   |
+| Autentikasi    | `next/headers`, cookies  |
+
+---
+
+## ⚙️ Instalasi & Setup
+
+1. Clone repository:
+```bash
+git clone https://github.com/NichoAdhyatma/article-web-app.git
+cd article-web-app
+````
+
+2. Install dependencies:
+
+```bash
+npm install
+# atau
+yarn install
+```
+
+3. Tambahkan file `.env.local`:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=https://your-api-url.com
+```
+
+4. Jalankan project:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Akses via [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧠 Arsitektur Folder
 
-## Learn More
+```
+src/
+├── app/                       # Halaman App Router
+│   ├── admin/article/        # Halaman khusus Admin
+│   ├── auth/login/           # Halaman login
+│   └── layout.tsx            # Layout global
+├── components/
+│   ├── ui/                   # Komponen UI (Box, Button, Typography)
+│   └── global/form/          # Input form reusable
+├── lib/
+│   ├── api/                  # API + React Query mutation
+│   └── constants.ts          # Nama cookie dan konfigurasi
+├── schemas/                  # Validasi Zod untuk form
+├── context/                  # Context global (jika ada)
+└── public/                   # Aset publik (logo, dll)
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔐 Otentikasi dan Routing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* Menggunakan `cookies()` dari `next/headers` untuk membaca token
+* Pengguna akan otomatis redirect berdasarkan role:
 
-## Deploy on Vercel
+  * `Admin` → `/admin/article`
+  * `User` → `/article`
+* Tidak ada akses tampilan pada `/`, hanya redirect logic
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🧪 Testing
+
+> Saat ini belum tersedia unit test atau e2e test. Kamu bisa menambahkan dengan:
+
+* **Unit Test**: Jest + React Testing Library
+* **E2E Test**: Playwright atau Cypress
+
+---
+
+## 🧩 Penggunaan
+
+### 👤 Login
+
+Buka `/auth/login`, login sesuai role:
+
+* Admin dapat akses penuh
+* User hanya bisa membaca
+
+### 🛠 CRUD Artikel
+
+Di halaman `/admin/article`, Admin dapat:
+
+* Tambah Artikel: lewat dialog form
+* Edit Artikel: dialog pre-filled berdasarkan query
+* Hapus Artikel: (tambahkan jika belum tersedia)
+
+---
+
+## 📦 Deployment
+
+Untuk deploy ke [Vercel](https://vercel.com):
+
+* Pastikan `.env.local` disesuaikan di Environment Variables
+* Push ke GitHub → Vercel akan auto-deploy
+
+---
+
+## 📬 Kontak
+
+* 🧑‍💻 Author: **Nicholaus Adhyatma**
+* 🌐 GitHub: [@NichoAdhyatma](https://github.com/NichoAdhyatma)
+
+---
+
+## 📄 Lisensi
+
+MIT License. Lihat file `LICENSE`.
