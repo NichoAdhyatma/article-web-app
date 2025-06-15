@@ -119,7 +119,7 @@ function AlertDialogDescription({
 }
 
 function AlertDialogAction({
-  className,
+  className = "w-full sm:w-fit",
   variant = "default",
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Action> & {
@@ -127,20 +127,20 @@ function AlertDialogAction({
 }) {
   return (
     <AlertDialogPrimitive.Action
-      className={cn(buttonVariants({ fullWidth: false, variant }), className)}
+      className={cn(buttonVariants({ fullWidth: true, variant }), className)}
       {...props}
     />
   );
 }
 
 function AlertDialogCancel({
-  className,
+  className = "w-full sm:w-fit",
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Cancel>) {
   return (
     <AlertDialogPrimitive.Cancel
       className={cn(
-        buttonVariants({ variant: "outline", fullWidth: false }),
+        buttonVariants({ variant: "outline", fullWidth: true }),
         className
       )}
       {...props}
