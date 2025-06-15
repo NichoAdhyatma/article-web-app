@@ -14,7 +14,7 @@ export type CategoryResponse = {
 };
 
 export type CategoryQueryParams = {
-  title?: string;
+  search?: string;
   page?: number;
   limit?: number;
 };

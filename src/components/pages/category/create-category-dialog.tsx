@@ -11,13 +11,16 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import Typography from "@/components/ui/typography";
+import { useCreateCategory } from "@/lib/api/mutation/category-mutation";
 import {
   categorySchema,
   CategorySchemaType,
 } from "@/lib/schemas/category/category-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 interface CreateCategoryDialogProps {
   open?: boolean;
@@ -30,14 +33,38 @@ export const CreateCategoryDialog = ({
 }: CreateCategoryDialogProps) => {
   const form = useForm<CategorySchemaType>({
     resolver: zodResolver(categorySchema),
-    defaultValues: { category: "" },
+    defaultValues: { name: "" },
   });
 
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, setError } = form;
+
+  const router = useRouter();
+
+  const { mutate, isPending } = useCreateCategory();
 
   const onSubmit = (data: CategorySchemaType) => {
-    console.log("Category created:", data);
-    // Here you would typically send the data to your API or state management
+    mutate(data, {
+      onSuccess: () => {
+        form.reset();
+
+        onOpenChange?.(false);
+
+        router.refresh();
+        
+        toast.success("Category created successfully!");
+      },
+      onError: (error) => {
+        console.error("Error creating category:", error);
+        if (error.message) {
+          setError("name", {
+            type: "manual",
+            message: error.message,
+          });
+        }
+
+        toast.error("Failed to create category. Please try again.");
+      },
+    });
   };
 
   return (
@@ -59,7 +86,7 @@ export const CreateCategoryDialog = ({
           <Form {...form}>
             <FormInputField
               control={control}
-              name="category"
+              name="name"
               label="Category"
               placeholder="Input Category"
             />
@@ -73,7 +100,11 @@ export const CreateCategoryDialog = ({
             </Button>
           </DialogClose>
 
-          <Button onClick={handleSubmit(onSubmit)} className="w-full sm:w-fit">
+          <Button
+            isLoading={isPending}
+            onClick={handleSubmit(onSubmit)}
+            className="w-full sm:w-fit"
+          >
             Add
           </Button>
         </DialogFooter>

@@ -11,20 +11,22 @@ import {
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import Typography from "@/components/ui/typography";
+import { useUpdateCategory } from "@/lib/api/mutation/category-mutation";
 import {
   categorySchema,
   CategorySchemaType,
 } from "@/lib/schemas/category/category-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogTrigger } from "@radix-ui/react-dialog";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 interface EditCategoryDialogProps {
   trigger?: React.ReactNode;
-  open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  open?: boolean;
 }
 
 const useGetCategoryParams = () => {
@@ -43,25 +45,59 @@ export const EditCategoryDialog = ({
 }: EditCategoryDialogProps) => {
   const form = useForm<CategorySchemaType>({
     resolver: zodResolver(categorySchema),
-    defaultValues: { category: "" },
+    defaultValues: { name: "" },
   });
 
   const { categoryId, categoryName } = useGetCategoryParams();
 
+  const [openDialog, setOpenDialog] = useState(open ?? false);
+
+  const router = useRouter();
+
   const { control, handleSubmit } = form;
 
+  const { mutate, isPending } = useUpdateCategory();
+
   useEffect(() => {
-    if (categoryName && categoryId) {
-      form.reset({ category: categoryName });
+    if (categoryName) {
+      form.reset({ name: categoryName });
     }
   }, [categoryId, categoryName, form]);
 
   const onSubmit = (data: CategorySchemaType) => {
-    console.log("Category created:", data);
+    mutate(
+      {
+        id: categoryId ?? "",
+        data: {
+          name: data.name,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Category updated successfully!");
+
+          router.refresh();
+
+          setOpenDialog(false);
+
+          onOpenChange?.(false);
+        },
+        onError: (error) => {
+          toast.error("Failed to update category. Please try again.");
+
+          if (error.message) {
+            form.setError("name", {
+              type: "manual",
+              message: error.message,
+            });
+          }
+        },
+      }
+    );
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -71,7 +107,7 @@ export const EditCategoryDialog = ({
               weight={"semibold"}
               className="text-slate-900"
             >
-              Create Category
+              Edit Category
             </Typography>
           </DialogTitle>
         </DialogHeader>
@@ -80,7 +116,7 @@ export const EditCategoryDialog = ({
           <Form {...form}>
             <FormInputField
               control={control}
-              name="category"
+              name="name"
               label="Category"
               placeholder="Input Category"
             />
@@ -94,7 +130,12 @@ export const EditCategoryDialog = ({
             </Button>
           </DialogClose>
 
-          <Button onClick={handleSubmit(onSubmit)} className="w-full sm:w-fit">
+          <Button
+            isLoading={isPending}
+            disabled={categoryId?.trim().length === 0}
+            onClick={handleSubmit(onSubmit)}
+            className="w-full sm:w-fit"
+          >
             Save Changes
           </Button>
         </DialogFooter>

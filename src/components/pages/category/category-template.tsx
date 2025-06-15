@@ -20,10 +20,14 @@ import Typography from "@/components/ui/typography";
 import { useAlertDialog } from "@/context/alert-dialog-context";
 import { useFilterContext } from "@/context/filter-context";
 import useDebounce from "@/hooks/use-debounce";
+import { useDeleteCategory } from "@/lib/api/mutation/category-mutation";
+import { dateFormat } from "@/lib/format/date-format";
 import { CategoryResponse } from "@/lib/types/category";
+import { cn } from "@/lib/utils";
 import { Search, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 interface CategoryTemplateProps {
   categories: CategoryResponse;
@@ -34,10 +38,15 @@ const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
 
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+
   const [openCreateCategoryDialog, setOpenCreateCategoryDialog] =
     useState(false);
 
-  const { handleSearch } = useFilterContext();
+  const { handleCategorySearch, handlePageChange } = useFilterContext();
+
+  const { mutate: deleteCategory, isPending: isPendingDeleteCategory } =
+    useDeleteCategory();
 
   const [search, setSearch] = useState("");
 
@@ -45,7 +54,7 @@ const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
 
   useEffect(
     () => {
-      handleSearch(debuncedSearch);
+      handleCategorySearch(debuncedSearch);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [debuncedSearch]
@@ -56,8 +65,20 @@ const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
   };
 
   const handleDeleteCategory = (articleId?: string) => {
-    // Logic to delete the article
-    console.log(`Deleting category with ID: ${articleId}`);
+    if (!articleId) {
+      toast.error("Category ID is required to delete.");
+      return;
+    }
+
+    deleteCategory(articleId, {
+      onSuccess: () => {
+        toast.success("Category deleted successfully.");
+        router.refresh();
+      },
+      onError: (error) => {
+        toast.error(`Failed to delete category: ${error.message}`);
+      },
+    });
   };
 
   const handleShowAlertDeleteDialog = ({
@@ -84,12 +105,24 @@ const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
     categoryName: string;
   }) => {
     if (!categoryId) {
-      return;
+      toast.error("Category ID is required to edit.");
     }
 
-    router.replace(`?id=${categoryId}&name=${categoryName}`, {
-      scroll: false,
-    });
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("id", categoryId ?? "");
+    params.set("name", categoryName);
+
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  const handleCloseEditCategoryDialog = () => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete("id");
+    params.delete("name");
+
+    router.replace(`?${params.toString()}`, { scroll: false });
   };
 
   return (
@@ -100,7 +133,7 @@ const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
           weight={"medium"}
           className="text-slate-800"
         >
-          Total Category : 25
+          Total Category : {categories.totalData}
         </Typography>
       </Box>
 
@@ -160,7 +193,7 @@ const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
                         align={"center"}
                         className="max-w-[225px] w-full text-ellipsis whitespace-break-spaces line-clamp-2"
                       >
-                        {category.createdAt}
+                        {dateFormat.MMMMdyyyyHHmm(category.createdAt ?? "")}
                       </Typography>
                     </Box>
                   </TableCell>
@@ -185,9 +218,7 @@ const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
                           }
                           onOpenChange={(open) => {
                             if (!open) {
-                              router.replace("/admin/category", {
-                                scroll: false,
-                              });
+                              handleCloseEditCategoryDialog();
                             }
                           }}
                         />
@@ -196,15 +227,21 @@ const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
                       <Typography
                         size={"textSm"}
                         weight={"regular"}
-                        className="text-red-500 underline hover:cursor-pointer"
-                        onClick={() =>
-                          handleShowAlertDeleteDialog({
-                            articleId: category.id,
-                            name: category.name ?? "-",
-                          })
+                        className={cn(
+                          " underline hover:cursor-pointer text-red-500",
+                          isPendingDeleteCategory && "text-gray-400"
+                        )}
+                        onClick={
+                          isPendingDeleteCategory
+                            ? () => {}
+                            : () =>
+                                handleShowAlertDeleteDialog({
+                                  articleId: category.id,
+                                  name: category.name ?? "-",
+                                })
                         }
                       >
-                        Delete
+                        {isPendingDeleteCategory ? "Deleting..." : "Delete"}
                       </Typography>
                     </Box>
                   </TableCell>
@@ -214,7 +251,11 @@ const CategoryTemplate = ({ categories }: CategoryTemplateProps) => {
           <TableFooter>
             <TableRow>
               <TableCell colSpan={5} className="text-center py-6 px-4">
-                <PaginationBuilder currentPage={1} totalPages={5} />
+                <PaginationBuilder
+                  currentPage={categories.currentPage ?? 1}
+                  totalPages={categories.totalPages ?? 1}
+                  onPageChange={handlePageChange}
+                />
               </TableCell>
             </TableRow>
           </TableFooter>

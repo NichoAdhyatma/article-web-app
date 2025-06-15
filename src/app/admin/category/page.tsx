@@ -4,20 +4,20 @@ import { getCategories } from "@/lib/api/category";
 import { CategoryQueryParams } from "@/lib/types/category";
 
 interface PageProps {
-  searchParams: Promise<CategoryQueryParams>;
+  searchParams: Promise<CategoryQueryParams & { seatch: string }>;
 }
 
 const CategoryPage = async ({ searchParams }: PageProps) => {
   const searchParamsObj = await searchParams;
 
-  const title = searchParamsObj.title || "";
+  const title = searchParamsObj.search || "";
   const page = searchParamsObj.page || 1;
   const limit = searchParamsObj.limit || 10;
 
   const categories = await getCategories({
     page,
     limit,
-    title
+    search: title
   });
 
   return (

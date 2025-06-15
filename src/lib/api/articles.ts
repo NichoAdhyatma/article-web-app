@@ -23,7 +23,7 @@ export const getArticles = async (params: ArticleQueryParams) => {
       total: 0,
       page: 1,
       limit: 10,
-    };
+    } as ArticleResponse;
   }
 };
 
@@ -34,7 +34,18 @@ export const getDetailedArticle = async (id: string) => {
     return response.data;
   } catch (error) {
     console.log("error", error);
-    return {};
+    return {
+      id: "",
+      title: "",
+      content: "",
+      category: "",
+      user: "",
+      imageUrl: "",
+      createdAt: "",
+      updatedAt: "",
+      userId: "",
+      categoryId: "",
+    } as Article;
   }
 };
 
