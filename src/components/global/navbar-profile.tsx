@@ -16,8 +16,6 @@ const NavbarProfile = ({ responsive, className }: NavbarProfileProps) => {
 
   const router = useRouter();
 
-  
-
   const imagePath = responsive
     ? isSmallScreen
       ? "/app-logo.svg"
