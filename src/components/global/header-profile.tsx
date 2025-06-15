@@ -6,6 +6,8 @@ import Typography from "../ui/typography";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
+import { SidebarTrigger } from "../ui/sidebar";
+import { useMediaQuery } from "react-responsive";
 
 const HeaderProfile = () => {
   const pathName = usePathname();
@@ -27,6 +29,8 @@ const HeaderProfile = () => {
 
   const router = useRouter();
 
+  const isSmallScreen = useMediaQuery({ maxWidth: 640 });
+
   return (
     <Box
       justify={"between"}
@@ -34,6 +38,8 @@ const HeaderProfile = () => {
       align={"center"}
       className="w-full px-6 py-5 border-b-[1px] bg-gray-50 border-slate-200 sticky top-0 z-50"
     >
+      {isSmallScreen && <SidebarTrigger />}
+      
       <Typography
         size={"textXl"}
         weight={"semibold"}
