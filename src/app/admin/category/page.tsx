@@ -17,8 +17,15 @@ const CategoryPage = async ({ searchParams }: PageProps) => {
   const categories = await getCategories({
     page,
     limit,
-    search: title
   });
+
+  if (title.trim() !== "") {
+    if (categories.data) {
+      categories.data = categories.data.filter((category) =>
+        category.name?.toLowerCase().includes(title.toLowerCase())
+      );
+    }
+  }
 
   return (
     <FilterProvider>

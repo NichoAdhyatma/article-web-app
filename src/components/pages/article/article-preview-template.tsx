@@ -47,7 +47,11 @@ const ArticlePreviewTemplate = () => {
   }, [article]);
 
   if (!article) {
-    return <Typography>No article preview available</Typography>;
+    return (
+      <NavbarFooterLayout>
+        <Typography>No article preview available</Typography>
+      </NavbarFooterLayout>
+    );
   }
 
   return (
@@ -85,7 +89,7 @@ const ArticlePreviewTemplate = () => {
         </Box>
 
         <ResponsiveImage
-          src={article.thumbnailPreview || "/placeholder-img.png"}
+          src={article.thumbnailPreview || "https://placehold.co/1120x480"}
           alt="placeholder-img"
           aspectRatio="1120/480"
           objectFit="cover"

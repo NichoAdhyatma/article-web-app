@@ -7,6 +7,7 @@ import { Box } from "@/components/ui/box";
 import Typography from "@/components/ui/typography";
 import { dateFormat } from "@/lib/format/date-format";
 import { Article } from "@/lib/types/article";
+import { useEffect } from "react";
 
 interface ArticleDetailTemplateProps {
   article: Article;
@@ -17,6 +18,10 @@ const ArticleDetailTemplate = ({
   article,
   otherArticles,
 }: ArticleDetailTemplateProps) => {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   return (
     <NavbarFooterLayout>
       <Box className="py-10 max-w-[1120px] mx-auto gap-7 px-5">

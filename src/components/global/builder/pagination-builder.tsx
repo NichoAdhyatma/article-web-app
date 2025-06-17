@@ -61,6 +61,7 @@ const PaginationBuilder = ({
             href="#"
             onClick={(e) => {
               e.preventDefault();
+
               onPageChange?.(Math.max(1, currentPage - 1));
             }}
           />
@@ -76,6 +77,7 @@ const PaginationBuilder = ({
                 isActive={page === currentPage}
                 onClick={(e) => {
                   e.preventDefault();
+
                   onPageChange?.(Number(page));
                 }}
               >
@@ -90,6 +92,7 @@ const PaginationBuilder = ({
             href="#"
             onClick={(e) => {
               e.preventDefault();
+
               onPageChange?.(Math.min(totalPages, currentPage + 1));
             }}
           />

@@ -56,7 +56,7 @@ export function FormSelectField<T extends FieldValues>({
           {label && <FormLabel>{label}</FormLabel>}
           <Select onValueChange={field.onChange} value={field.value} disabled={field.disabled}>
             <FormControl>
-              <SelectTrigger className="w-full max-w-xs">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
             </FormControl>
