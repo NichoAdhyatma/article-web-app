@@ -25,7 +25,7 @@ const HomePage = async ({ searchParams }: PageProps) => {
     page,
     limit,
     category,
-    sortBy: "createdAt",
+    sortBy: "updatedAt",
     sortOrder: "desc",
   });
 
