@@ -73,6 +73,11 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localCategory]);
 
+  useEffect(() => {
+    clearArticle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleDeleteArticle = ({
     articleId,
     articleTitle,
@@ -103,10 +108,7 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
     if (!articleId) {
       return;
     }
-    // Logic to edit the article
-    clearArticle();
 
-    console.log(`Editing article with ID: ${articleId}`);
     router.push(`/admin/article/edit/${articleId}`);
   };
 
@@ -128,8 +130,7 @@ const AdminTemplate = ({ articles, categories }: ArticlesAdminProps) => {
     if (!articleId) {
       return;
     }
-    // Logic to show alert dialog for deleting the article
-    console.log(`Showing delete dialog for article with ID: ${articleId}`);
+
     showDialog({
       title: "Delete Article",
       description:
