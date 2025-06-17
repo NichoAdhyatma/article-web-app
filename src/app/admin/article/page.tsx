@@ -30,7 +30,7 @@ const AdminPage = async ({ searchParams }: PageProps) => {
     limit,
     category,
     userId,
-    sortBy: "createdAt",
+    sortBy: "updatedAt",
     sortOrder: "desc",
   });
 

@@ -11,10 +11,11 @@ import PaginationBuilder from "@/components/global/builder/pagination-builder";
 import { ArticleResponse } from "@/lib/types/article";
 import { useFilterContext } from "@/context/filter-context";
 import { CategoryResponse } from "@/lib/types/category";
+import { useSearchParams } from "next/navigation";
 
 interface HomeTemplateProps {
   articleResponse?: ArticleResponse;
-  categoryResponse?: CategoryResponse; 
+  categoryResponse?: CategoryResponse;
 }
 
 const HomeTemplate = ({ articleResponse }: HomeTemplateProps) => {
@@ -59,6 +60,20 @@ const HomeTemplate = ({ articleResponse }: HomeTemplateProps) => {
   const getTotalArticles = () => {
     return articleResponse?.total || 0;
   };
+
+  const searchParams = useSearchParams();
+
+  const prevParamsRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const currentParams = searchParams.toString();
+
+    if (prevParamsRef.current && prevParamsRef.current !== currentParams) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    prevParamsRef.current = currentParams;
+  }, [searchParams]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">

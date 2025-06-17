@@ -25,7 +25,7 @@ export default function SelectBuilder({
   placeholder = "Select an option",
   value,
   onChange,
-  className = "max-w-sm w-fit",
+  className = "w-full sm:w-fit",
   withClearOption = true,
   clearLabel = "All",
 }: ReusableSelectProps) {

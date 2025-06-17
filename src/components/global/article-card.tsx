@@ -18,7 +18,6 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
 
   const handleNavigateToDetail = () => {
     router.push(`/article/${article.id}`);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
